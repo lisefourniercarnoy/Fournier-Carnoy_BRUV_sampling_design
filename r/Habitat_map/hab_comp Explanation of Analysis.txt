@@ -1,0 +1,13 @@
+----------------------------------------------------------------------------------
+
+Project: Geographe Bay BRUV sampling design comparison (C. Habitat map comp.)
+Data:    2024 MEGlab + DBCA BRUV habitat data.
+Task:    Create bathymetry derivatives and finalise habitat dataframe
+Author:  Lise Fournier-Carnoy / adapted from Claude Spencer
+Date:    August 2024
+
+----------------------------------------------------------------------------------
+
+So. The point of this analysis is to compare the habitat maps made from preferential and spatially balanced BRUV sampling designs. We use General Additive Models (GAMs) to predict the extent of Macroalgae, Invertebrate, Sand, Rock and Seagrass habitats in Geographe Bay.
+
+(add more literature etc. on it once it's done)
