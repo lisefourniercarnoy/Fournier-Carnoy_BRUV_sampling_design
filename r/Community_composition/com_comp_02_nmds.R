@@ -27,12 +27,16 @@ library(tidyverse) # for data manipulation
 library(mvabund) # for community analysis
 library(sf) # for manipulating shapefiles
 
+colour_palette <- readLines("chapter_colours.txt"); colour_palette <- eval(parse(text = colour_palette))
+source("custom_theme.R")
+
 
 ## Load data and transform into OTU format ----------------------------------
 
 # Files used in this script
 file_analysis_box <- "QGIS layers/polys/com_comp_analysis_limits.shp"
 file_all_maxn     <- "data/tidy/2024_geographe_all_tidy_maxn.csv"
+file_habitat      <- "data/fullspp_habitat_table_ref.csv"
 
 # Box around East Geographe, we're only using this area to compare community.
 crs <- st_crs(4326)
@@ -53,9 +57,13 @@ maxn <- st_as_sf(maxn, coords = c("longitude", "latitude"), crs = 4326); plot(ma
 
 # Select only points within community composition box
 com_comp <- st_intersection(maxn, box); plot(com_comp)
-saveRDS(com_comp, 'data/rmd/com_comp_maxn.rds') # for rmarkdown
+saveRDS(com_comp, 'data/rmd/community_composition_analysis_maxn.rds') # for rmarkdown
 
-## NMDS -----------------------------------------------------------------------
+# Species-habitat lookup table
+hab <- read.csv(file_habitat) %>% 
+  glimpse()
+
+## PCoA -----------------------------------------------------------------------
 
 # Separate environmental and abundance data
 community_data <- as.data.frame(com_comp) %>%
@@ -88,10 +96,11 @@ dist_matrix <- vegdist(community_data, method = "bray")
 pcoa_result <- cmdscale(dist_matrix, k = 2, eig = TRUE)  # k = 2 for two principal axes
 pcoa_scores <- as.data.frame(pcoa_result$points); head(pcoa_scores)
 
-pcoa_scores$sd <- com_comp$sd; pcoa_scores$status <- com_comp$status#; pcoa_scores$depth <- com_comp$depth
+pcoa_scores$sd <- com_comp$sd; pcoa_scores$status <- com_comp$status; pcoa_scores$opcode <- com_comp$opcode
+
 head(pcoa_scores)
 
-# Rempcoa_scores# Remove species with zero variance
+# Remove species with zero variance
 species_data <- community_data[, apply(community_data, 2, sd) > 0]
 
 # Check alignment of samples between species data and PCoA scores
@@ -119,18 +128,19 @@ head(major_species)
 
 library(ggrepel)
 
+saveRDS(pcoa_scores, file = "data/rmd/pcoa_scores.rds") # for rmarkdown
 
 ggplot(pcoa_scores, aes(x = V1, y = V2)) +
   geom_point(aes( colour = sd, shape = status), size = 3) +
   scale_alpha_continuous(range = c(0.2, 1)) +
-  scale_colour_manual(values = c("#f1c232", "#7f6000")) +
+  scale_colour_manual(values = colour_palette[c(4, 6)]) +
   theme_minimal() +
-  geom_segment(data = major_species, aes(x = 0, y = 0, xend = cor_PC1, yend = cor_PC2),
-               arrow = arrow(type = "closed", length = unit(0.1, "inches")), color = "red") +  # Add vectors
-  geom_text_repel(data = major_species, aes(x = cor_PC1, y = cor_PC2, label = paste("italic('", species, "')", sep = "")),
-                  size = 3, box.padding = 1, point.padding = 0,
-                  max.overlaps = 20, segment.color = "red",
-                  vjust = -3, hjust = 1.5, parse = TRUE) +  # Italicize species names
+  # geom_segment(data = major_species, aes(x = 0, y = 0, xend = cor_PC1, yend = cor_PC2),
+  #              arrow = arrow(type = "closed", length = unit(0.1, "inches")), color = "red") +  # Add vectors
+  # geom_text_repel(data = major_species, aes(x = cor_PC1, y = cor_PC2, label = paste("italic('", species, "')", sep = "")),
+  #                 size = 3, box.padding = 1, point.padding = 0,
+  #                 max.overlaps = 20, segment.color = "red",
+  #                 vjust = -3, hjust = 1.5, parse = TRUE) +  # Italicize species names
   theme_minimal() +
   theme(
     legend.position = "bottom",
@@ -147,6 +157,8 @@ ggplot(pcoa_scores, aes(x = V1, y = V2)) +
   ggtitle("PCoA with Major Species Vectors") +
   xlab("PC1") +
   ylab("PC2")
+
+
 
 ## manyglm() ------------------------------------------------------------------
 
@@ -168,8 +180,9 @@ plot(data_abund ~ sd, col = as.numeric(status))
 
 # Test predictors to the community data
 geo <- manyglm(community ~ sd * status,
-               data = data_list, family = "negative.binomial")
-
+               data = data_list, family = "negative.binomial"
+               )
+?manyglm
 # Check assumptions
 
 # -- Mean variance (random cloud of points around zero, no pattern) and log lin-
@@ -181,11 +194,65 @@ plot.manyglm(geo)
 par(mfrow = c(2,2))
 qqnorm(residuals(geo)[,1], main ='sampling design'); qqline(residuals(geo)[,1], col = "red")
 qqnorm(residuals(geo)[,2], main ='status'); qqline(residuals(geo)[,2], col = "red")
-qqnorm(residuals(geo)[,3], main = 'depth'); qqline(residuals(geo)[,3], col = "red")
+qqnorm(residuals(geo)[,3], main = 'design:status'); qqline(residuals(geo)[,3], col = "red")
 
 
 # Check outputs
-result <- anova.manyglm(geo, p.uni = 'adjusted') # takes like 3 hours
-result
-capture.output(result, file = "outputs/Community_comparison/manyglm_result.txt")
+result <- anova.manyglm(geo, p.uni = 'adjusted') # takes like 20 min
+capture.output(result, file = "outputs/Community_comparison/community_composition_analysis_manyglm_result.txt")
+
+### TRY####
+
+species_hab <- hab %>%
+  dplyr::select(fullspp, reef, seagrass, sand, pelagic)
+
+# Step 2: Align species names in community matrix to those in habitat lookup
+colnames(community_data) <- gsub("\n", ".", colnames(community_data))  # if needed
+
+# Filter to shared species
+shared_species <- intersect(colnames(community_data), species_hab$fullspp)
+
+community_filtered <- community_data[, shared_species]
+habitat_filtered <- species_hab %>% filter(fullspp %in% shared_species)
+
+# Step 3: Convert abundance to presence/absence
+community_pa <- (community_filtered > 0) * 1  # presence = 1, absence = 0
+
+# Convert to matrix for multiplication
+comm_mat <- as.matrix(community_pa)
+
+# Build habitat matrix (species × habitat), aligned
+hab_mat <- as.matrix(habitat_filtered[match(colnames(comm_mat), habitat_filtered$fullspp),
+                                      c("reef", "seagrass", "sand", "pelagic")])
+
+# Matrix multiplication → site × habitat matrix (species richness per habitat)
+site_habitat <- as.data.frame(comm_mat %*% hab_mat)
+
+# PCoA (if not already run)
+dist_matrix <- vegdist(community_data, method = "bray")
+pcoa_result <- cmdscale(dist_matrix, k = 2, eig = TRUE)
+pcoa_scores <- as.data.frame(pcoa_result$points)
+colnames(pcoa_scores) <- c("PCoA1", "PCoA2")
+
+# Correlate habitat richness with PCoA axes
+habitat_pcoa_correlation <- cor(site_habitat, pcoa_scores, method = "pearson")
+
+# Prepare for plotting
+habitat_vectors <- as.data.frame(habitat_pcoa_correlation)
+habitat_vectors$habitat <- rownames(habitat_vectors)
+
+# Plot with presence-based habitat vectors
+library(ggplot2)
+library(ggrepel)
+
+ggplot(pcoa_scores, aes(x = PCoA1, y = PCoA2)) +
+  geom_point(aes(colour = com_comp$sd, shape = com_comp$status), size = 3) +
+  geom_segment(data = habitat_vectors,
+               aes(x = 0, y = 0, xend = PCoA1, yend = PCoA2, color = habitat),
+               arrow = arrow(length = unit(0.3, "cm")), size = 1.2) +
+  geom_text_repel(data = habitat_vectors,
+                  aes(x = PCoA1, y = PCoA2, label = habitat),
+                  size = 4, fontface = "bold") +
+  theme_minimal() +
+  ggtitle("PCoA with Habitat Association Vectors (Presence-Based)")
 
