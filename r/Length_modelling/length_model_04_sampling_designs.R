@@ -8,35 +8,33 @@
 
 # -----------------------------------------------------------------------------
 
-# Status:  Got sampling designs down (subject to supervisor approval), moving onto getting abundance from that
+# Status:
 
 # -----------------------------------------------------------------------------
 
 library(spsurvey) # for making random sampling designs
-library(tidyverse)
+library(tidyverse) # for tidy data manipulation and plotting and everything
 library(sf) # for dealing with shapefiles
 library(terra) # for dealing with shapefiles
 library(stars) # for dealing with shapefiles
 library(starsExtra) # for dealing with shapefiles
 library(tidyterra) # for dealing with shapefiles
 library(ggnewscale)
+library(ggspatial) # for scalebars on plots
 library(nngeo)
 library(cubelyr)
-library(units) # for cluster design, making sure cluster points aren't too far.
-
+library(units) # for cluster design, making sure cluster points aren't too close.
+library(spatstat.geom) # for random design with min distance
+library(spatstat.random) # for random design with min distance
 
 # Clear memory
 rm(list=ls())
 
 set.seed(12345)
 
-## Load data ----
+## Load data ------------------------------------------------------------------
 
-# Set the seed for reproducible plans
-set.seed(1)
-
-
-## Files used in this script --------------------------------------------------
+# Files used in this script
 
 file_bathy_deriv        <- "data/spatial/rasters/2024_geographe_bathymetry-derivatives.rds"
 
@@ -47,28 +45,30 @@ file_pref_samp_area     <- "QGIS layers/polys/simulated_SZ_preferential_sampling
 file_abund_crop         <- "outputs/Length_comparison/predicted_abundance_rasters/mature_predicted_abundance.tif"
 
 
-## Load bathymetry and SZs ----------------------------------------------------
+# Load bathymetry and SZs
 
 # Extent to crop layers
 ext <- c(115.035, 115.68012207, -33.69743897, -33.20243897)
+crs <- 7850 # projected in m
 
 preds <- readRDS(file_bathy_deriv) %>%
   crop(ext); plot(preds)
 
 # Load shapefiles
 aus <- st_read(file_land) %>% # Land
-  st_transform(4326) %>%
+  st_transform(crs) %>%
   glimpse(); plot(aus)
 
 SZ <- st_read(file_sim_SZ) %>% # Simulated SZ
   st_make_valid() %>%
-  st_transform(4326) %>%
+  st_transform(crs) %>%
   st_difference(st_union(aus)) %>%
   glimpse(); plot(SZ$geometry)
 
 
-# Cut out 5m depth out of the sampling zone
+# Cut out 7m depth out of the sampling zone
 samp_area <- st_read(file_pref_samp_area) %>% # Sampling area
+  st_transform(crs) %>%
   st_difference(st_union(aus)) %>%
   st_make_valid()
 
@@ -76,12 +76,90 @@ depth_mask <- preds$gadepth < -7 # Select the depth to cut out
 plot(depth_mask)
 depth_polygons <- as.polygons(depth_mask, na.rm = TRUE) # Convert to polygon
 depth_sf <- st_as_sf(depth_polygons) %>% # Convert again for intersection
+  st_transform(crs) %>%
   st_make_valid()
 
 samp_area <- st_intersection(samp_area, depth_sf) %>% # Select only deeper-than-5m
   slice(2); plot(samp_area)
 
-saveRDS(samp_area, "data/spatial/shapefiles/sampling_area_deeper_than_7m.rds")
+saveRDS(samp_area, "data/spatial/shapefiles/L04_sampling_area_deeper_than_7m.rds")
+
+## SIMPLE SPATIAL BALANCED ----------------------------------------------------
+
+### Run the sampling design ---------------------------------------------------
+samp_area$temp <- 'temp' # temporary column
+samp_temp <- tibble(temp = 50) # for GRTS to know how many samples to put
+
+sample.design <- grts(st_transform(samp_area, 7850),
+                      n_base = samp_temp,
+                      n_over = 10,
+                      stratum_var = "temp",
+                      DesignID = "LFC-GEO",
+                      mindis = 500,
+                      maxtry = 20)
+sample.design <- st_sf(sample.design$sites_base)
+sample.design$in_SZ <- as.logical(st_within(sample.design$geometry, SZ, sparse = FALSE)[,1])
+
+tempdat <- st_nn(sample.design$sites_base, sample.design$sites_base, # Measure the distance between points and their nearest neighbour
+                 returnDist = T, progress = F, k = 5, maxdist = 500) %>% # measure only the ones closer than 500m
+  glimpse()
+
+samples_sf_simsb <- sample.design$sites_base %>%
+  dplyr::mutate(nn = sapply(tempdat[[1]], "[", 1),
+                dists = sapply(tempdat[[2]], "[", 1)) %>%
+  # If everything works well (and the grts mindis call above is set to 500), there should be only zeroes in dists.
+  # If not, remove the ones that have dist between 0-500m (0 excluded)
+  glimpse()
+summary(samples_sf_simsb$dists) # all zero. perfect.
+
+
+### Plot example design -------------------------------------------------------
+
+ggplot() +
+  geom_sf(data = sf_all, aes(fill = as.factor(detrended)), colour = NA) +
+  scale_fill_manual(values = c("0" = "#F5F5F5", "1" = "#E0E0E0", "2" = "#9E9E9E"),
+                    na.value = NA,
+                    labels = c("0" = "Strata 1 - low",
+                               "1" = "Strata 2 - medium",
+                               "2" = "Strata 3 - high")) +
+  labs(fill = "Detrended bathymetry",
+       title = "a. Simple spatially balanced sampling design") +
+  new_scale_fill() +
+  geom_sf(data = aus) +
+  geom_sf(data = SZ, colour = "#7f6000", fill = NA, linewidth = 1) +
+  geom_sf(data = samples_sf_simsb, aes(colour = "Simulated sample points")) +
+  coord_sf(crs = crs, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
+  scale_color_manual(name = '', values = c('Simulated sample points' = 'red')) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+saveRDS(samples_sf_simsb, 'data/rmd/L04_example_sampling_design_simple_spatial_balance.rds') # for use in Rmarkdown
+
+
+### Loop for 1000 designs -----------------------------------------------------
+
+num_designs <- 1000 # Number of SB sampling designs to create
+sampling_designs <- vector("list", num_designs)
+
+for(i in 1:num_designs) {
+  # Create a sampling design
+  sampling_design <- grts(st_transform(samp_area, 7850),
+                        n_base = samp_temp,
+                        n_over = 10,
+                        stratum_var = "temp",
+                        DesignID = "LFC-GEO",
+                        mindis = 500,
+                        maxtry = 20)
+  sampling_design <- st_sf(sampling_design$sites_base)
+  sampling_design$in_SZ <- as.logical(st_within(sampling_design$geometry, SZ, sparse = FALSE)[,1])
+  
+  sampling_designs[[i]] <- sampling_design
+}
+head(sampling_designs[[1]])
+
+# Save the list of sampling designs
+saveRDS(sampling_designs, file = "outputs/Length_comparison/sampling_designs/L04_simple_spatially_balanced_designs.rds")
+
 
 
 ## Make strata ----------------------------------------------------------------
@@ -102,8 +180,9 @@ par(mfrow = c(1, 1)); plot(cat_roughness)
 
 
 sf_detrended <- as.factor(cat_detrended) %>% # Detrended bathymetry strata
-  as.polygons() %>%
-  st_as_sf(); plot(sf_detrended)
+  as.polygons() %>% 
+  st_as_sf() %>% 
+  st_transform(crs); plot(sf_detrended)
 
 sf_SZ <- st_intersection(sf_detrended, SZ) %>% # Strata within SZ
   mutate(in_SZ = TRUE); plot(sf_SZ)
@@ -111,6 +190,7 @@ sf_SZ <- st_intersection(sf_detrended, SZ) %>% # Strata within SZ
 sf_detrended <- as.factor(cat_detrended) %>% # Strata without SZ
   as.polygons() %>%
   st_as_sf() %>%
+  st_transform(crs) %>% 
   st_difference(st_union(SZ)) %>%
   mutate(in_SZ = FALSE); plot(sf_detrended)
 
@@ -119,14 +199,11 @@ sf_all <- bind_rows(sf_SZ, sf_detrended) %>%
 
 inp_stars <- st_as_stars(sf_all); plot(inp_stars) # Convert into a 'stars' object, for later
 
-
-## SPATIALLY BALANCED SAMPLING DESIGN ----------------------------------------
-
 sf_all <- st_intersection(sf_all, samp_area) %>% # Crop to the preferential sampling area
   st_make_valid() %>%
   st_collection_extract("POLYGON"); plot(sf_all)
 
-saveRDS(sf_all, 'data/rmd/samp_area_detrended.rds')
+saveRDS(sf_all, 'data/rmd/L04_samp_area_detrended.rds')
 
 inp_stars <- st_as_stars(sf_all); plot(inp_stars)
 
@@ -144,40 +221,66 @@ inp_sf <- st_as_sf(inp_stars) %>%
       in_SZ == FALSE & strata == 2 ~ "out_strata_2",
       in_SZ == FALSE & strata == 3 ~ "out_strata_3"
     ),
-    nsamps = case_when(
+    nsamps_sb_25_25 = case_when(
       zone_strata == "SZ_strata_1" ~ 10,
       zone_strata == "SZ_strata_2" ~ 10,
       zone_strata == "SZ_strata_3" ~ 5,
       zone_strata == "out_strata_1" ~ 10,
       zone_strata == "out_strata_2" ~ 10,
       zone_strata == "out_strata_3" ~ 5
+    ),
+    nsamps_sb_20_30 = case_when(
+      zone_strata == "SZ_strata_1" ~ 8,
+      zone_strata == "SZ_strata_2" ~ 8,
+      zone_strata == "SZ_strata_3" ~ 4,
+      zone_strata == "out_strata_1" ~ 12,
+      zone_strata == "out_strata_2" ~ 12,
+      zone_strata == "out_strata_3" ~ 6
+    ),
+    nsamps_p_25_25 = case_when(
+      zone_strata == "SZ_strata_3" ~ 25,
+      zone_strata == "out_strata_3" ~ 25
+    ),
+    nsamps_p_20_30 = case_when(
+      zone_strata == "SZ_strata_3" ~ 20,
+      zone_strata == "out_strata_3" ~ 30
     )
   ) %>%
-  group_by(zone_strata) %>%
-  summarise(
-    geometry = st_union(geometry),
-    nsamps = first(nsamps),  # Retrieve nsamps for each zone_strata
-    .groups = 'drop'
-  ) %>%
+  # group_by(zone_strata) %>%
+  # summarise(
+  #   geometry = st_union(geometry),
+  #   nsamps = first(nsamps),  # Retrieve nsamps for each zone_strata
+  #   .groups = 'drop'
+  # ) %>%
   dplyr::mutate(area = st_area(.),
                 mindis = 500) %>%
-  st_transform(crs = 32750) %>%
+  st_transform(crs = crs) %>%
   glimpse()
-
+unique(inp_sf)
 plot(inp_sf) # Check that number of samples in each group is all good
 
-saveRDS(inp_sf, "data/spatial/shapefiles/sampling_design_zone_strata.rds") # Save to use in other scripts
+saveRDS(inp_sf, "data/spatial/shapefiles/L04_sampling_design_zone_strata_all.rds") # Save to use in other scripts
 
+
+## SPATIALLY BALANCED SAMPLING DESIGN, 25-25 ----------------------------------
 
 # GRTS needs the number of samples in this horrible wide format for some reason
-base_samps <- data.frame(nsamps = inp_sf$nsamps,
+base_samps <- data.frame(nsamps = inp_sf$nsamps_sb_25_25,
                          zone_strata = inp_sf$zone_strata) %>%
   pivot_wider(names_from = zone_strata,
               values_from = nsamps) %>%
   glimpse()
-
+base_samps <- tibble(
+  "SZ_strata_1" = 10,
+  "SZ_strata_2" = 10,
+  "SZ_strata_3" = 5,
+  "out_strata_1" = 10,
+  "out_strata_2" = 10,
+  "out_strata_3" = 5
+)
 
 ### Run the sampling design ---------------------------------------------------
+
 sample.design <- grts(inp_sf,
                       n_base = base_samps,
                       n_over = 10,
@@ -203,13 +306,9 @@ samples_sf_sb <- sample.design$sites_base %>%
   # If not, remove the ones that have dist between 0-500m (0 excluded)
   glimpse()
 summary(samples_sf_sb$dists) # all zero. perfect.
-saveRDS(samples_sf_sb, 'data/rmd/samples_sf_sb.rds') # for use in Rmarkdown
+
 
 ### Plot the sampling design --------------------------------------------------
-
-tempdat <- st_nn(samples_sf_sb, samples_sf_sb,
-                 returnDist = T, progress = F, k = 5, maxdist = 500)
-
 
 ggplot() +
   geom_sf(data = sf_all, aes(fill = as.factor(detrended)), colour = NA) +
@@ -219,15 +318,18 @@ ggplot() +
                                "1" = "Strata 2 - medium",
                                "2" = "Strata 3 - high")) +
   labs(fill = "Detrended bathymetry",
-       title = "a. Spatially balanced sampling design") +
+       title = "a. Spatially balanced sampling design  25 in SZ, 25 outside the SZ") +
   new_scale_fill() +
   geom_sf(data = aus) +
   geom_sf(data = SZ, colour = "#7f6000", fill = NA, linewidth = 1) +
   geom_sf(data = samples_sf_sb, aes(colour = "Simulated sample points")) +
-  coord_sf(crs = 4326, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
+  coord_sf(crs = crs, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
   scale_color_manual(name = '', values = c('Simulated sample points' = 'red')) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+saveRDS(samples_sf_sb, 'data/rmd/L04_example_sampling_design_stratified_spatial_balance_25_25.rds') # for use in Rmarkdown
+
 
 ### Loop for 1000 designs -----------------------------------------------------
 
@@ -235,6 +337,7 @@ num_designs <- 1000 # Number of SB sampling designs to create
 sampling_designs <- vector("list", num_designs)
 
 for (i in 1:num_designs) {
+  print(i)
   # Create a sampling design
   sampling_design <- grts(inp_sf,
                           n_base = base_samps,
@@ -254,51 +357,217 @@ for (i in 1:num_designs) {
 }
 head(sampling_designs[[1]])
 # Save the list of sampling designs
-saveRDS(sampling_designs, file = "outputs/Length_comparison/sampling_designs/spatially_balanced_designs_with_strata.rds")
+saveRDS(sampling_designs, file = "outputs/Length_comparison/sampling_designs/L04_stratified_spatial_balanced_designs_25_25.rds")
 
-
-## PREFERENTIAL SAMPLING DESIGN -----------------------------------------------
-
-# Reorganise layers to suit preferential sampling
-
-sf_all_pref <- st_intersection(sf_all, samp_area) %>% # Crop to the preferential sampling area
-  st_make_valid() %>%
-  st_collection_extract("POLYGON") %>%
-  dplyr::filter(detrended == 2); plot(sf_all_pref) # For preferential design, only drop on target habitat (highly complex)
-
-inp_stars <- st_as_stars(sf_all_pref); plot(inp_stars)
-
-# Set the number of samples in each strata
-inp_sf <- st_as_sf(inp_stars) %>%
-  st_make_valid() %>%
-  mutate(strata = as.integer(detrended) + 1) %>%
-  st_make_valid() %>%
-  mutate( # Group polygons by strata and SZ status
-    zone_strata = case_when(in_SZ == TRUE & strata == 3 ~ "SZ_strata_3",
-                            in_SZ == FALSE & strata == 3 ~ "out_strata_3"),
-
-    nsamps = case_when(zone_strata == "SZ_strata_3" ~ 25, # Number of sample in each strata, based on 2024 East Geo numbers
-                       zone_strata == "out_strata_3" ~ 25)
-  ) %>%
-  group_by(zone_strata) %>%
-  summarise(
-    geometry = st_union(geometry),
-    nsamps = first(nsamps), # Retrieve first nsamps for each zone_strata
-    .groups = 'drop'
-  ) %>%
-  dplyr::mutate(area = st_area(.),
-                mindis = 10) %>% # Minimum distance set much lower than SB
-  st_transform(crs = 32750) %>%
-  glimpse()
-plot(inp_sf) # Check that number of samples in each group is all good
-
+## SPATIALLY BALANCED SAMPLING DESIGN, 20-30 ----------------------------------
 
 # GRTS needs the number of samples in this horrible wide format for some reason
-base_samps <- data.frame(nsamps = inp_sf$nsamps,
-                         zone_strata = inp_sf$zone_strata) %>%
-  pivot_wider(names_from = zone_strata,
-              values_from = nsamps) %>%
+base_samps <- tibble(
+  "SZ_strata_1" = 8,
+  "SZ_strata_2" = 8,
+  "SZ_strata_3" = 4,
+  "out_strata_1" = 12,
+  "out_strata_2" = 12,
+  "out_strata_3" = 6
+)
+
+### Run the sampling design ---------------------------------------------------
+sample.design <- grts(inp_sf,
+                      n_base = base_samps,
+                      n_over = 10,
+                      stratum_var = "zone_strata",
+                      DesignID = "LFC-GEO",
+                      mindis = 500,
+                      maxtry = 20)
+
+plot(sample.design)
+
+
+### Filter out points that are too close to each other ------------------------
+
+tempdat <- st_nn(sample.design$sites_base, sample.design$sites_base, # Measure the distance between points and their nearest neighbour
+                 returnDist = T, progress = F, k = 5, maxdist = 500) %>% # measure only the ones closer than 500m
   glimpse()
+
+
+samples_sf_sb <- sample.design$sites_base %>%
+  dplyr::mutate(nn = sapply(tempdat[[1]], "[", 1),
+                dists = sapply(tempdat[[2]], "[", 2)) %>%
+  # If everything works well (and the grts mindis call above is set to 500), there should be only zeroes in dists.
+  # If not, remove the ones that have dist between 0-500m (0 excluded)
+  glimpse()
+summary(samples_sf_sb$dists) # all zero. perfect.
+
+
+### Plot the sampling design --------------------------------------------------
+
+ggplot() +
+  geom_sf(data = sf_all, aes(fill = as.factor(detrended)), colour = NA) +
+  scale_fill_manual(values = c("0" = "#F5F5F5", "1" = "#E0E0E0", "2" = "#9E9E9E"),
+                    na.value = NA,
+                    labels = c("0" = "Strata 1 - low",
+                               "1" = "Strata 2 - medium",
+                               "2" = "Strata 3 - high")) +
+  labs(fill = "Detrended bathymetry",
+       title = "a. Spatially balanced sampling design") +
+  new_scale_fill() +
+  geom_sf(data = aus) +
+  geom_sf(data = SZ, colour = "#7f6000", fill = NA, linewidth = 1) +
+  geom_sf(data = samples_sf_sb, aes(colour = "Simulated sample points")) +
+  coord_sf(crs = crs, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
+  scale_color_manual(name = '', values = c('Simulated sample points' = 'red')) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+saveRDS(samples_sf_sb, 'data/rmd/L04_example_sampling_design_stratified_spatial_balance_20_30.rds') # for use in Rmarkdown
+
+
+### Loop for 1000 designs -----------------------------------------------------
+
+num_designs <- 1000 # Number of SB sampling designs to create
+sampling_designs <- vector("list", num_designs)
+
+for (i in 1:num_designs) {
+  print(i)
+  # Create a sampling design
+  sampling_design <- grts(inp_sf,
+                          n_base = base_samps,
+                          n_over = 10,
+                          stratum_var = "zone_strata",
+                          DesignID = paste("LFC-GEO", i, sep = "-"),
+                          mindis = 100,
+                          maxtry = 20)
+  
+  # Add strata and zone_strata information to sampled points
+  sampled_points <- sampling_design$sites_base %>%
+    dplyr::mutate(
+      zone_strata = st_join(., inp_sf)$zone_strata,
+    )
+  
+  sampling_designs[[i]] <- sampled_points
+}
+head(sampling_designs[[1]])
+# Save the list of sampling designs
+saveRDS(sampling_designs, file = "outputs/Length_comparison/sampling_designs/L04_stratified_spatial_balanced_designs_20_30.rds.rds")
+
+
+## PREFERENTIAL SAMPLING DESIGN 25-25 -----------------------------------------
+
+# GRTS needs the number of samples in this horrible wide format for some reason
+base_samps <- tibble(
+  "SZ_strata_3" = 25,
+  "out_strata_3" = 25
+)
+
+### Run the sampling design ----
+
+sample.design <- grts(inp_sf,
+                      n_base = base_samps,
+                      n_over = 10,
+                      stratum_var = "zone_strata",
+                      DesignID = "LFC-GEO",
+                      mindis = 10,
+                      maxtry = 20)
+
+plot(sample.design)
+
+
+### Filter out points that are too close to each other ------------------------
+
+tempdat <- st_nn(sample.design$sites_base, sample.design$sites_base, # Measure the distance between points and their nearest neighbour
+                 returnDist = T, progress = F, k = 5, maxdist = 500) %>% # measure only the ones closer than 500m
+  glimpse()
+
+
+samples_sf_pref <- sample.design$sites_base %>%
+  dplyr::mutate(nn = sapply(tempdat[[1]], "[", 1),
+                dists = sapply(tempdat[[2]], "[", 1)) %>%
+  # If everything works well (and the grts mindis call above is set to 500), there should be only zeroes in dists.
+  # If not, remove the ones that have dist between 0-500m (0 excluded)
+  glimpse()
+
+
+### Plot the sampling design --------------------------------------------------
+
+tempdat <- st_nn(samples_sf_pref, samples_sf_pref,
+                 returnDist = T, progress = F, k = 5, maxdist = 500)
+
+
+ggplot() +
+  geom_sf(data = sf_all, aes(fill = as.factor(detrended)), colour = NA) +
+  scale_fill_manual(values = c("0" = "#F5F5F5", "1" = "#E0E0E0", "2" = "#9E9E9E"),
+                    na.value = NA,
+                    labels = c("0" = "Strata 1 - low",
+                               "1" = "Strata 2 - medium",
+                               "2" = "Strata 3 - high")) +
+  labs(fill = "Detrended bathymetry",
+       title = "b. Preferential sampling design") +
+  new_scale_fill() +
+  geom_sf(data = aus) +
+  geom_sf(data = SZ, colour = "#7f6000", fill = NA, linewidth = 1) +
+  geom_sf(data = samples_sf_pref, aes(colour = "Simulated sample points")) +
+  coord_sf(crs = crs, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
+  scale_color_manual(name = '', values = c('Simulated sample points' = 'red')) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+saveRDS(samples_sf_pref, 'data/rmd/L04_example_sampling_design_preferential_25_25.rds') # for use in Rmarkdown
+
+
+
+### Loop for 1000 designs ------------------------------------------------------
+
+num_designs <- 1000 # Number of preferential sampling designs to create
+sampling_designs <- vector("list", num_designs) # Create an empty list in which to store designs
+
+for (i in 1:num_designs) { # Create SB sampling designs
+  print(i)
+  # Create a sampling design
+  sampling_design <- grts(inp_sf,
+                          n_base = base_samps,
+                          n_over = 10,
+                          stratum_var = "zone_strata",
+                          DesignID = paste("LFC-GEO", i, sep = "-"),
+                          mindis = 100,
+                          maxtry = 20)
+  
+  # Add strata and zone_strata information to sampled points
+  sampled_points <- sampling_design$sites_base %>%
+    dplyr::mutate(
+      zone_strata = st_join(., inp_sf)$zone_strata,
+    )
+  
+  sampling_designs[[i]] <- sampled_points
+}
+
+
+# Check the sampling designs, looking to see that they're all different
+plot(sampling_designs[[1]])
+plot(sampling_designs[[2]])
+
+# Convert the list into usable sf objects
+sampling_design_coord <- lapply(sampling_designs, function(x) {
+  data.frame(
+    lat_WGS84 = x$sites_base$lat_WGS84,
+    lon_WGS84 = x$sites_base$lon_WGS84
+  )
+})
+names(sampling_design_coord) <- paste0("pref_2525_design_", seq_along(sampling_design_coord)) # Rename each design
+
+plot(sf_list[[2]])
+
+# Save the list
+saveRDS(sf_list, file = "outputs/Length_comparison/sampling_designs/L04_preferential_designs_25_25.rds")
+
+
+
+## PREFERENTIAL SAMPLING DESIGN 20-30 -----------------------------------------
+
+# GRTS needs the number of samples in this horrible wide format for some reason
+base_samps <- tibble(
+  "SZ_strata_3" = 20,
+  "out_strata_3" = 30
+)
 
 
 ### Run the sampling design ----
@@ -326,7 +595,6 @@ samples_sf_pref <- sample.design$sites_base %>%
   # If everything works well (and the grts mindis call above is set to 500), there should be only zeroes in dists.
   # If not, remove the ones that have dist between 0-500m (0 excluded)
   glimpse()
-saveRDS(samples_sf_pref, 'data/rmd/samples_sf_pref.rds') # for use in Rmarkdown
 
 
 ### Plot the sampling design --------------------------------------------------
@@ -347,12 +615,12 @@ ggplot() +
   geom_sf(data = aus) +
   geom_sf(data = SZ, colour = "#7f6000", fill = NA, linewidth = 1) +
   geom_sf(data = samples_sf_pref, aes(colour = "Simulated sample points")) +
-  coord_sf(crs = 4326, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
+  coord_sf(crs = crs, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
   scale_color_manual(name = '', values = c('Simulated sample points' = 'red')) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+saveRDS(samples_sf_pref, 'data/rmd/L04_example_sampling_design_preferential_20_30.rds') # for use in Rmarkdown
 
 
 ### Loop for 1000 designs ------------------------------------------------------
@@ -361,14 +629,25 @@ num_designs <- 1000 # Number of preferential sampling designs to create
 sampling_designs <- vector("list", num_designs) # Create an empty list in which to store designs
 
 for (i in 1:num_designs) { # Create SB sampling designs
-  sampling_designs[[i]] <- grts(inp_sf,
-                                n_base = base_samps,
-                                n_over = 10,
-                                stratum_var = "zone_strata",
-                                DesignID = paste("LFC-GEO", i, sep = "-"),
-                                mindis = 10,
-                                maxtry = 20)
+  print(i)
+  # Create a sampling design
+  sampling_design <- grts(inp_sf,
+                          n_base = base_samps,
+                          n_over = 10,
+                          stratum_var = "zone_strata",
+                          DesignID = paste("LFC-GEO", i, sep = "-"),
+                          mindis = 100,
+                          maxtry = 20)
+  
+  # Add strata and zone_strata information to sampled points
+  sampled_points <- sampling_design$sites_base %>%
+    dplyr::mutate(
+      zone_strata = st_join(., inp_sf)$zone_strata,
+    )
+  
+  sampling_designs[[i]] <- sampled_points
 }
+
 
 # Check the sampling designs, looking to see that they're all different
 plot(sampling_designs[[1]])
@@ -381,32 +660,30 @@ sampling_design_coord <- lapply(sampling_designs, function(x) {
     lon_WGS84 = x$sites_base$lon_WGS84
   )
 })
-names(sampling_design_coord) <- paste0("pref_design_", seq_along(sampling_design_coord)) # Rename each design
+names(sampling_design_coord) <- paste0("pref_2030_design_", seq_along(sampling_design_coord)) # Rename each design
 
-sf_list <- lapply(sampling_design_coord, function(df) { # Convert to sf object
-  st_as_sf(df, coords = c("lon_WGS84", "lat_WGS84"), crs = 4326)  # Using WGS 84 (EPSG:4326)
-})
 plot(sf_list[[2]])
 
 # Save the list
-saveRDS(sf_list, file = "outputs/Length_comparison/sampling_designs/preferential_designs.rds")
+saveRDS(sf_list, file = "outputs/Length_comparison/sampling_designs/L04_preferential_designs_20_30.rds")
 
 
 ## CLUMPED SAMPLING DESIGN ----------------------------------------------------
 
 # Reorganise layers to suit clumped sampling
+sf_all_temp <- st_transform(sf_all, 4326)
+samp_area_temp <- st_transform(samp_area, 4326)
+sf::sf_use_s2(FALSE)
 
-set.seed(123)
-
-sf_all_clump <- st_intersection(sf_all, samp_area) %>% # Crop to the preferential sampling area
+sf_all_clump <- st_intersection(sf_all_temp, samp_area_temp) %>% # Crop to the preferential sampling area
   st_make_valid() %>%
   st_collection_extract("POLYGON") %>%
   dplyr::filter(detrended == 2) %>%  # For clumped design, we will choose reef (high detrended bathy)
-
   # Now we need to separate the fished zones into South and North (so that we can have 2 clumps either side of the SZ)
   st_cast("POLYGON") %>%                                    # Split the features
   mutate(centroid = st_centroid(geometry),                  # Create centroids for filtering
          latitude = st_coordinates(centroid)[,2])           # Extract latitude
+
 plot(sf_all_clump$geometry)
 
 # Split into fished north, fished south and SZ, then union and put back together
@@ -417,43 +694,41 @@ sf_SZ     <- sf_all_clump %>% filter(in_SZ == TRUE) %>% dplyr::select(-centroid,
 # Combine them back together
 sf_clump <- bind_rows(sf_north, sf_south, sf_SZ); plot(sf_clump)
 
+
 ### Create cluster centres ----------------------------------------------------
 
-set.seed(567)
-
 clump_area <- sf_clump
-common_crs <- 4326
 
 # Function to generate random points within a polygon
 generate_points_in_polygon <- function(polygon, num_points, min_distance = 2000) {
-  polygon <- st_transform(polygon, crs = common_crs)  # Ensure CRS consistency
+  polygon <- st_transform(polygon, crs = crs)  # Ensure CRS consistency
   points <- data.frame(x = numeric(num_points), y = numeric(num_points))
   cluster_centers <- list()  # To store the cluster centers
-
+  
   # Convert min_distance to a "units" object in meters
   min_distance <- set_units(min_distance, "m")
-
+  
   i <- 1
   while (i <= num_points) {
     # Generate random point
     point <- st_sfc(st_point(c(runif(1, st_bbox(polygon)[1], st_bbox(polygon)[3]),
                                runif(1, st_bbox(polygon)[2], st_bbox(polygon)[4]))),
-                    crs = common_crs)
-
+                    crs = crs)
+    
     # Check if the point is inside the polygon
     if (length(st_within(point, polygon)[[1]]) > 0 && st_within(point, polygon)[[1]]) {
       # Check the distance to existing points
       valid_point <- TRUE
       for (existing_point in cluster_centers) {
         distance <- st_distance(point, existing_point)
-
+        
         # Ensure distance comparison works by converting the distance to the same unit (meters)
         if (distance < min_distance) {
           valid_point <- FALSE
           break  # Stop checking if it's too close
         }
       }
-
+      
       # If the point is valid, add it to the cluster centers
       if (valid_point) {
         points[i, ] <- c(st_coordinates(point)[1], st_coordinates(point)[2])
@@ -470,6 +745,7 @@ preferential_area_SZ    <- clump_area[clump_area$in_SZ == "TRUE", ]
 preferential_area_north <- clump_area[clump_area$in_SZ == "FALSE_north", ]
 preferential_area_south <- clump_area[clump_area$in_SZ == "FALSE_south", ]
 
+
 # Generate 2 clusters within the SZ area, and 4 outside the SZ
 num_clusters <- 2
 num_clusters_tot <- num_clusters * 3 # x in the SZ, x south, x north = x*3
@@ -484,76 +760,89 @@ cluster_centers <- st_as_sf(rbind(cluster_centers_true, cluster_centers_north, c
 ### Create points around the cluster centres ----------------------------------
 
 # Parameters for the clusters
-cluster_radius      <- 400  # The radius of each clump (in meters)
-points_per_cluster  <- 4  # Number of points per cluster
-min_distance        <- 100  # Minimum distance between cluster points in meters
-
-utm_crs <- 32750  # UTM Zone 50S (meters)
+cluster_radius          <- 400  # The radius of each clump (in meters)
+points_per_cluster_out  <- 8  # Number of points per cluster outside SZ
+points_per_cluster_SZ   <- 9  # Number of points per cluster inside SZ (this is to add up to 50 total points)
+min_distance            <- 200  # Minimum distance between cluster points in meters
 
 # Convert cluster centers to UTM (meters)
-cluster_centers_sf <- st_as_sf(cluster_centers, coords = c("X", "Y"), crs = 4326) %>%
-  st_transform(utm_crs)  # Convert to UTM
+cluster_centers_sf <- st_as_sf(cluster_centers, coords = c("X", "Y"), crs = crs)
 
-# Extract transformed coordinates
-cluster_centers_utm <- as.data.frame(st_coordinates(cluster_centers_sf))
-samp_area_utm <- st_transform(samp_area, utm_crs)
+# Prepare layers for the function
+cluster_centers_utm       <- as.data.frame(st_coordinates(cluster_centers_sf))
+samp_area_utm             <- st_transform(samp_area, crs)
+preferential_area_SZ_utm  <- st_transform(preferential_area_SZ, crs)
 
-
-generate_clumped_points <- function(cluster_centers_utm, samp_area_utm, points_per_cluster, cluster_radius, preferential_area_SZ) {
+generate_clumped_points <- function(cluster_centers_utm, samp_area_utm, points_per_cluster, cluster_radius, preferential_area_SZ, min_distance) {
   clumped_points <- list()
-
+  
   # Loop through each cluster center
   for (i in 1:nrow(cluster_centers_utm)) {
     cluster_points <- data.frame(
-      x = numeric(0),  # Start with an empty vector for valid points
-      y = numeric(0),  # Same here
-      cluster_id = integer(0)  # Empty cluster id
+      x = numeric(0),  
+      y = numeric(0),  
+      cluster_id = integer(0),
+      in_SZ = logical(0)  # New column to indicate if the point is in SZ
     )
-
-    # Determine if the cluster center is inside or outside SZ
-    # This is determined by the 'is_in_SZ' flag which is either TRUE or FALSE for inside/outside
-    is_in_SZ <- st_within(st_sfc(st_point(c(cluster_centers_utm$X[i], cluster_centers_utm$Y[i])), crs = utm_crs), preferential_area_SZ)[[1]]
-
-    # Generate points around the cluster center
+    
+    # Convert cluster center to sf point
+    cluster_sf <- st_sfc(st_point(c(cluster_centers_utm$X[i], cluster_centers_utm$Y[i])), crs = st_crs(preferential_area_SZ))
+    
+    # Check if cluster center is inside SZ
+    is_in_SZ <- lengths(st_intersects(cluster_sf, preferential_area_SZ)) > 0
+    points_per_cluster <- ifelse(is_in_SZ, points_per_cluster_SZ, points_per_cluster_out)
+    
+    # Generate points while maintaining minimum distance constraint
     while (nrow(cluster_points) < points_per_cluster) {
-      # Generate random points within the cluster radius
+      # Generate random point within cluster radius
       x_random <- rnorm(1, mean = cluster_centers_utm$X[i], sd = cluster_radius)
       y_random <- rnorm(1, mean = cluster_centers_utm$Y[i], sd = cluster_radius)
-
-      # Create a point from the generated coordinates
-      point <- st_sfc(st_point(c(x_random, y_random)), crs = utm_crs)
-
-      # Check if the point is within the sampling area
-      if (length(st_within(point, samp_area_utm)[[1]]) > 0 && st_within(point, samp_area_utm)[[1]]) {
-
-        # Now ensure the point is inside or outside the SZ polygon, depending on the cluster category
+      
+      # Create sf point
+      point <- st_sfc(st_point(c(x_random, y_random)), crs = st_crs(preferential_area_SZ))
+      
+      # Ensure the point is inside the sampling area
+      if (lengths(st_intersects(point, samp_area_utm)) > 0) {
+        
+        # Check if the point is inside the SZ
+        point_in_SZ <- lengths(st_intersects(point, preferential_area_SZ)) > 0
+        
+        # Ensure the point is inside or outside SZ based on cluster category
         if (is_in_SZ) {
-          # If the cluster is in SZ, point must be inside the SZ polygon
-          if (length(st_within(point, preferential_area_SZ)[[1]]) > 0 && st_within(point, preferential_area_SZ)[[1]]) {
-            cluster_points <- rbind(cluster_points, data.frame(x = x_random, y = y_random, cluster_id = i))
-          }
+          if (!point_in_SZ) next  # Skip if not inside SZ
         } else {
-          # If the cluster is outside SZ, point must be outside the SZ polygon
-          if (length(st_within(point, preferential_area_SZ)[[1]]) == 0) {
-            cluster_points <- rbind(cluster_points, data.frame(x = x_random, y = y_random, cluster_id = i))
-          }
+          if (point_in_SZ) next  # Skip if inside SZ
         }
+        
+        # Convert existing points in the cluster to sf object
+        if (nrow(cluster_points) > 0) {
+          existing_points_sf <- st_as_sf(cluster_points, coords = c("x", "y"), crs = st_crs(preferential_area_SZ))
+          
+          # Compute distances to existing points
+          distances <- st_distance(point, existing_points_sf)
+          
+          # Ensure new point is at least min_distance from all existing points
+          if (any(distances < units::set_units(min_distance, "m"))) next # Skip this point if too close
+        }
+        
+        # Add point to cluster
+        cluster_points <- rbind(cluster_points, data.frame(x = x_random, y = y_random, cluster_id = i, in_SZ = point_in_SZ))
       }
     }
-
-    # Add the generated cluster points to the final list
+    
+    # Store generated cluster points
     clumped_points[[i]] <- cluster_points
   }
-
-  # Combine all the cluster points into one data frame
+  
+  # Combine all clusters into a single data frame
   clumped_points_df <- do.call(rbind, clumped_points)
   return(clumped_points_df)
 }
 
 
 # Generate the clumped points within the sampling area
-clumped_points_sf <- generate_clumped_points(cluster_centers_utm, samp_area_utm, points_per_cluster, cluster_radius)
-clumped_points_sf <- st_as_sf(clumped_points_sf, coords = c("x", "y"), crs = utm_crs)
+clumped_points_sf <- generate_clumped_points(cluster_centers_utm, samp_area_utm, points_per_cluster, cluster_radius, preferential_area_SZ_utm, min_distance)
+clumped_points_sf <- st_as_sf(clumped_points_sf, coords = c("x", "y"), crs = crs)
 
 # Convert back to spatial features in WGS84 CRS
 samples_sf_cluster <- st_transform(clumped_points_sf, 4326)
@@ -576,10 +865,11 @@ ggplot() +
   geom_sf(data = aus) +
   geom_sf(data = SZ, colour = "#7f6000", fill = NA, linewidth = 1) +
   geom_sf(data = samples_sf_cluster, aes(colour = "Simulated sample points")) +
-  coord_sf(crs = 4326, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
+  coord_sf(crs = crs, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
   scale_color_manual(name = '', values = c('Simulated sample points' = 'red')) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+saveRDS(samples_sf_cluster, 'data/rmd/L04_example_sampling_design_clustered.rds') # for use in Rmarkdown
 
 
 ### Loop for 1000 designs -----------------------------------------------------
@@ -592,7 +882,8 @@ sampling_designs <- vector("list", num_designs)  # Create an empty list to store
 for (i in 1:num_designs) {
   # Set a random seed for each iteration to ensure different cluster centers and points
   set.seed(i)  # This ensures a different seed for each design, which leads to different random points
-
+  print(i)
+  
   # Generate cluster centers for each design
   cluster_centers_true <- generate_points_in_polygon(preferential_area_SZ, num_clusters)
   cluster_centers_north <- generate_points_in_polygon(preferential_area_north, num_clusters)
@@ -603,8 +894,8 @@ for (i in 1:num_designs) {
                               coords = c("x", "y"), crs = st_crs(clump_area))
 
   # Generate clumped points around these cluster centers
-  clumped_points_sf <- generate_clumped_points(cluster_centers_utm, samp_area_utm, points_per_cluster, cluster_radius)
-  clumped_points_sf <- st_as_sf(clumped_points_sf, coords = c("x", "y"), crs = utm_crs)
+  clumped_points_sf <- generate_clumped_points(cluster_centers_utm, samp_area_utm, points_per_cluster, cluster_radius, preferential_area_SZ_utm, min_distance)
+  clumped_points_sf <- st_as_sf(clumped_points_sf, coords = c("x", "y"), crs = crs)
 
   # Convert clumped points back to WGS84 CRS
   clumped_points_sf_wgs84 <- st_transform(clumped_points_sf, 4326)
@@ -617,31 +908,20 @@ for (i in 1:num_designs) {
 plot(sampling_designs[[1]])
 plot(sampling_designs[[2]])
 
-# Convert the list into usable sf objects
-sampling_design_coord <- lapply(sampling_designs, function(x) {
-  data.frame(
-    lat_WGS84 = st_coordinates(x)[, 2],  # Extract latitude
-    lon_WGS84 = st_coordinates(x)[, 1]   # Extract longitude
-  )
+
+names(sampling_designs) <- paste0("cluster_design_", seq_along(sampling_designs))
+
+# If they're already sf objects, no need to convert. But ensure they have the correct CRS.
+sf_list <- lapply(sampling_designs, function(x) {
+  st_set_crs(x, 4326)  # Set to WGS 84 if not already set
 })
 
-names(sampling_design_coord) <- paste0("cluster_design_", seq_along(sampling_design_coord))  # Rename each design
-
-# Convert to sf objects
-sf_list <- lapply(sampling_design_coord, function(df) {
-  st_as_sf(df, coords = c("lon_WGS84", "lat_WGS84"), crs = 4326)  # Using WGS 84 (EPSG:4326)
-})
-
-# Plot one of the designs
+# Now you can access and plot directly with attributes preserved
 plot(sf_list[[5]])
 plot(sf_list[[15]])
 plot(sf_list[[2]])
 
-
-
 # Save the list of designs
-saveRDS(sf_list, file = "outputs/Length_comparison/sampling_designs/cluster_designs.rds")
-
-### Plot the sampling design --------------------------------------------------
+saveRDS(sf_list, file = "outputs/Length_comparison/sampling_designs/L04_clustered_designs.rds")
 
 ### END ###
