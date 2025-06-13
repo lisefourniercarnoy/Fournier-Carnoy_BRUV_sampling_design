@@ -41,17 +41,17 @@ knitr::opts_chunk$set(echo = FALSE)
 
 # Introduction
 
-Anthropogenic stressors globally have caused significant declines in biodiversity, abundance and habitats [@Isbell2023; @Pereira2010]. In the marine environment, increases in the loss of essential habitats has lead to the loss of biodiversity and biomass in the marine environment [@Airoldi2008], increased the total area of dead zones, and lead to mass extinctions [@Luypaert2020; @Mccauley2015]. As a result, there has been a push for the creation and expansion of Marine Protected Areas (MPAs) and No-Take-Zones (NTZs) to safeguard biodiversity [@Zhao2024; @Robinson2024]: MPAs could provide resilience to changes driven by climate change in the medium-term by managing local stressors [@Ling2012; @Brown2013; @Gissi2021]. However, to better understand how MPAs affect species, habitats and ecosystems, and how they interact with local and global stressors, accurate monitoring is needed over adequate spatial and temporal scales [@Borja2021]. Correctly identifying the benefits of MPAs (or lack thereof) is therefore also critical to advise whether objectives are being met and ecosystems are adequately protected from local stressors [@Miller2014].
+Anthropogenic stressors globally have caused significant declines in biodiversity, abundance and habitats [@Isbell2023; @Pereira2010]. In the marine environment, increasing habitat loss has lead to biodiversity and biomass declines [@Airoldi2008], increased the total area of dead zones, and lead to mass extinctions [@Luypaert2020; @Mccauley2015]. As a result, there has been a push for the creation and expansion of Marine Protected Areas (MPAs) and No-Take-Zones (NTZs) to safeguard biodiversity [@Zhao2024; @Robinson2024]: MPAs could provide resilience to changes driven by climate change in the medium-term by managing local stressors [@Ling2012; @Brown2013; @Gissi2021]. However, to better understand how MPAs affect species, habitats and ecosystems, and how they interact with local and global stressors, accurate monitoring is needed over adequate spatial and temporal scales [@Borja2021]. Correctly identifying the benefits of MPAs (or lack thereof) is therefore also critical to advise whether objectives are being met and ecosystems are adequately protected from local stressors [@Miller2014].
 
-Many methods are used to monitor MPAs, depending on the biodiversity within them, the threats facing it, and the priorities identified by researchers [@Simpson2015]. The experimental designs used in monitoring have long been discussed, to ensure biological trends detected in the monitoring data are correctly attributed to the conservation intervention under study: @Miteva2012 review conservation instruments (including protected areas) and urge the need for better data to evaluate conservation interventions, to avoid drawing the wrong conclusions from monitoring data. In the past, studies assessing MPA effectiveness lacked controls and spatial/temporal replicates [@Underwood1991; @Osenberg2006], which limited the power of monitoring data. Improving experimental designs when monitoring MPAs will increase our ability to detect change and assess the effect and performance of MPAs on biological metrics [@Hayes2019].
+Many methods are used to monitor MPAs, depending on the biodiversity within them, the threats facing it, and the priorities identified by researchers [@Simpson2015]. The experimental designs used in monitoring have long been discussed, to ensure biological trends detected in the monitoring data are correctly attributed to the conservation intervention under study: @Miteva2012 review conservation instruments (including protected areas) and urge the need for better data to evaluate conservation interventions, to avoid drawing the wrong conclusions from monitoring data. In the past, studies assessing MPA effectiveness lacked controls and spatial/temporal replicates [@Underwood1991; @Osenberg2006], which limited the power of monitoring. Improving experimental designs of MPA monitoring programmes will increase our ability to detect change and assess the effect and performance of MPAs on biological metrics [@Hayes2019].
 
-Spatial sampling design can result in large differences in estimates and outcomes depending on the sampling method used. For stock assessments of fished species [@Liu2009; @Cheng2024] and underwater visual census of reef fish [@Bryan2016; @Smith2011], discussions as to how to distribute samples across a study area are common. Sample site choice can be separated into four broad categories: Systematic, Random, Preferential or Spatially Stratified. Systematic sampling effectively captures all scales (temporal or spatial) of a process, providing the most accurate estimates, [@Cheng2024] although labour-intensive and rarely feasible in most contexts. Preferential sampling, a stochastically dependent method (i.e. selective site choice, Cecconi et al., 2016), greatly reduces costs while focusing on the process of interest. However, depending on the aim of sampling, the effect of selective bias on estimates may be significant, especially abundance [@Aubry2024; @Conn2017], which is why Randomised sampling has been prevalent in research as a simple alternative. Stratified Random Sampling (referred hereafter as 'spatially balanced') seeks to randomly select sites equally between strata (shallow, mid-depth, deep, or seagrass, sand, reef habitats, for example) in an effort to obtain accurate relative abundance estimates for species of interest [@Cheng2024], potentially improving on Preferential designs [@Conn2017], while capturing a more representative population structure or community [@Bryan2016] compared to Random sampling. Studies comparing sampling designs often operate at large spatial scales (100s of km, @Cheng2024, @Switzer2023), investigating large biological processes like regional species abundance for fisheries stock assessments. At smaller spatial scales, sampling design is less studied: @Bryan2016 found that obtaining precise estimates for inside/outside management zones like MPAs would require more samples rather than larger scales of study for stratified sampling, but few comparisons of sampling designs for the detection of MPA effects specifically exists. Similarly, very little work comparing BRUV performance using different sampling designs exists.
+Spatial sampling design can result in large differences in estimates and outcomes depending on the sampling method used. For stock assessments of fished species [@Liu2009; @Cheng2024] and underwater visual census of reef fish [@Bryan2016; @Smith2011], discussions as to how to distribute samples across a study area are common. Sample site choice can be separated into four broad categories: Systematic, Random, Preferential or Spatially Stratified. Systematic sampling effectively captures all scales (temporal or spatial) of a process, providing the most accurate estimates, [@Cheng2024] although labour-intensive and rarely feasible in most contexts. Preferential sampling, a stochastically dependent method (i.e. selective site choice, Cecconi et al., 2016), greatly reduces costs while focusing on the process of interest. However, depending on the aim of sampling, the effect of selective bias on estimates may be significant, especially abundance [@Aubry2024; @Conn2017], which is why Randomised sampling has been prevalent in research as a simple alternative. Stratified Random Sampling (referred hereafter as 'spatially balanced') seeks to randomly select sites equally between strata (shallow, mid-depth and deep, or seagrass, sand and reef habitats, for example) in an effort to obtain accurate relative abundance estimates for species of interest [@Cheng2024], potentially improving on Preferential designs [@Conn2017], while capturing a more representative population structure or community [@Bryan2016] compared to Random sampling. Studies comparing sampling designs often operate at large spatial scales (100s of km, @Cheng2024, @Switzer2023), investigating large biological processes like regional species abundance for fisheries stock assessments. At smaller spatial scales, sampling design is less studied: @Bryan2016 found that obtaining precise estimates for inside/outside management zones like MPAs would require more samples rather than larger scales of study for stratified sampling, but few comparisons of sampling designs for the detection of MPA effects specifically exists. Similarly, very little work comparing BRUV performance using different sampling designs exists.
 
-In Australia, Baited Remote Underwater Video (BRUVs) are widely used to monitor the effects of marine management like Marine Parks (MPAs) on abundance and size of communities and target species [@Harasti2018; @Kelaher2014; @Malcolm2018]. BRUVs present advantages compared to other common methods, including the ability to sample areas inaccessible by divers and more sensitive detection of changes in fish communities compared to other census methods [@Schramm2020]. The ability to use footage for a variety of research questions, including fish community, [@Watson2007] size, [@Malcolm2018; @Watson2009] and habitat [@Scott2022] make BRUVs a popular choice for researchers. Like any spatial sampling, the choice of where to deploy sampling units like BRUVs depends on the research question of interest [@Foster2018], yet very few comparisons of BRUV spatial sampling designs exist to guide researchers.
+In Australia, Baited Remote Underwater Video (BRUVs) are widely used to monitor the effects of marine management like Marine Parks (MPAs) on abundance and size of communities and target species [@Harasti2018; @Kelaher2014; @Malcolm2018]. BRUVs present advantages compared to other common methods, including the ability to sample areas inaccessible by divers and more sensitive detection of changes in fish communities compared to other census methods [@Schramm2020]. The ability to use footage for a variety of research questions, including fish community [@Watson2007], size [@Malcolm2018; @Watson2009], and habitat [@Scott2022] make BRUVs a popular choice for researchers. Like any spatial sampling, the choice of where to deploy sampling units like BRUVs depends on the research question of interest [@Foster2018], yet very few comparisons of BRUV spatial sampling designs exist to guide researchers.
 
-In south-west Western Australia, recreational fishing pressure has lead to the depletion of emblematic fish species like Djubitj/West Australia Dhufish (*Glaucosoma hebraicum*) and Yijarup/Pink Snapper (*Chrysophrys auratus*) [@Ryan2022; @Gaynor2008]. To protect species and habitats from destructive and extractive activities, the Ngari Capes Marine Park (in Wadandi Country, between Waatern/Geographe Bay and Taalinup/Augusta) includes a network of highly protected areas ('Sanctuary Zones'), expected to provide conservation benefits to certain fish species which experience significant pressure like Yijarup/Pink Snapper (as has been found in other similar highly protected areas: @Alos2013; @Taylor2010; @Harasti2018; @Harasti2019). This Marine Park is part of a state-wide network of Marine Parks following CAR principles (comprehensive, adequate, representative) of biodiversity conservation. The area is monitored by BRUVs, inside and outside NTZs, with two different spatial sampling designs aiming to assess MPA performance and effectiveness (preferential and spatially balanced). This context represents a perfect case study for the comparison of these two sampling designs to assess fish communities in NTZs.
+In south-west Western Australia, recreational fishing pressure has lead to the depletion of emblematic fish species like Djubitj/West Australian Dhufish (*Glaucosoma hebraicum*) and Yijarup/Pink Snapper (*Chrysophrys auratus*) [@Ryan2022; @Gaynor2008]. To protect species and habitats from destructive and extractive activities, the Ngari Capes Marine Park (in Wadandi Country, between Waatern/Geographe Bay and Taalinup/Augusta) includes a network of highly protected areas ('Sanctuary Zones', SZ), expected to provide conservation benefits to certain fish species which experience significant pressure like Yijarup/Pink Snapper (as has been found in other similar highly protected areas: @Alos2013; @Taylor2010; @Harasti2018; @Harasti2019). This Marine Park is part of a state-wide network of Marine Parks following CAR principles (comprehensive, adequate, representative __REF__) of biodiversity conservation. The area is monitored by BRUVs, inside and outside NTZs, with two different spatial sampling designs aiming to assess MPA performance and effectiveness (preferential and spatially balanced). This context represents a perfect case study for the comparison of these two sampling designs to assess fish communities in NTZs.
 
-This preliminary study aims to compare two BRUV spatial sampling designs at a local (\<30km) scale, to understand how the detection of single and multiple species differ between a preferential and spatially balanced sampling design in and near a NTZ. Real BRUV data is used to (1.) compare community composition, and (2.) simulate sampling designs on a modelled spatial distribution model of a single species. Yijarup/Pink Snapper (*Chrysophrys auratus*) was chosen as a study species for (2.) as it is both a popular recreational fishing species [@Ryan2022; @Gaynor2008] as well as a species of interest to Wadandi Traditional Owners, who have intimate traditional knowledge of this species' ecology and life history, cited in Wadandi cultural songlines [@Davies2022].
+This preliminary study aims to compare three BRUV spatial sampling designs at a local (\<30km) scale, to understand how the detection of single and multiple species differ across a range of sampling designs from preferential to spatially balanced inside and near a NTZ. Real BRUV data is used to (1.) compare community composition, and (2.) simulate sampling designs on a modelled spatial distribution model of single species. Yijarup/Pink Snapper (*Chrysophrys auratus*) and (Wadandi name?)/Southern Maori Wrasse (*Ophthalmolepis lineolatus*) were chosen as study species for (2.). Yijarup/Pink Snapper is both a popular recreational fishing species [@Ryan2022; @Gaynor2008] as well as a species of interest to Wadandi Traditional Owners, who have intimate traditional knowledge of this species' ecology and life history, cited in Wadandi cultural songlines [@Davies2022]. (Wadandi name?)/Southern Maori Wrasse is a small-bodied by-catch species, associated with temperate reef and found to benefit from fishing protection [@kleczkowski2008density, @mclaren2015small]. We hypothesised that (1.) Community composition would be significantly different between the sampling designs, with Spatially balanced sampling detecting a greater diversity of species, and that (2.) Spatially balanced sampling would detect NTZ abundance increases closer to the actual increase in abundance.
 
 # Methods
 
@@ -79,9 +79,9 @@ library(kableExtra)
 ```{r real_BRUV_location_prep, include = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
 
 aus             <- st_read("data/spatial/shapefiles/wadandi_land.shp") # land shapefile
-com_samp_area <- st_read("QGIS layers/polys/com_comp_analysis_limits.shp")
-AMP <- st_read("QGIS layers/polys/AMP_local.shp") # real SZs
-MPA <- st_read("QGIS layers/polys/swc_sanctuaryzones.shp"); MPA <- st_zm(MPA); st_crs(MPA) <- 4326 # real SZs
+com_samp_area   <- st_read("QGIS layers/polys/com_comp_analysis_limits.shp")
+AMP             <- st_read("QGIS layers/polys/AMP_local.shp") # real SZs
+MPA             <- st_read("QGIS layers/polys/swc_sanctuaryzones.shp"); MPA <- st_zm(MPA); st_crs(MPA) <- 4326 # real SZs
 
 pref            <- st_read("QGIS layers/2024_pref_BRUVs.shp") # real BRUV state points
 spabal          <- st_read("QGIS layers/2024_spabal_BRUVs.shp") # real BRUV commonwealth points
@@ -96,6 +96,8 @@ library(grid)
 library(imager)
 library(ggspatial) # for scale bars
 
+palette <- c("#E5B25D", "#A3320B", "#6B0504", "#394F49", "#65743A")
+
 # Load images as raster grobs
 image1 <- rasterGrob(load.image("photos/wadandi_ranger_BRUV.JPG"), interpolate = TRUE)
 image2 <- rasterGrob(load.image("photos/BRUV_photo_yijarup_skippy.PNG"), interpolate = TRUE)
@@ -107,11 +109,11 @@ image_plot2 <- ggplot() + annotation_custom(image2) + theme_void()
 plot <- ggplot() +
   geom_sf(data = aus, fill = "lightgrey", color = "darkgray", size = 0.2) +
   geom_sf(data = com_samp_area,
-          aes(fill = 'Community \ncomposition \nanalysis limits'), color = "#f1c232", size = 5) +
+          aes(fill = 'Community \ncomposition \nanalysis limits'), color = "#394F49", size = 5) +
   geom_sf(data = AMP[AMP$ZoneName == 'National Park Zone',],
-          aes(fill = 'No-take \nzones'), color = "#ffd966", size = 0.5) +
+          aes(fill = 'No-take \nzones'), alpha = 0.5, color = "#65743A", size = 0.5) +
   geom_sf(data = MPA,
-          aes(fill = 'No-take \nzones'), color = "#ffd966", size = 0.2) +
+          aes(fill = 'No-take \nzones'), alpha = 0.5, color = "#65743A", size = 0.2) +
   geom_sf(data = pref[pref$longitude > 115.3,],
           aes(color = 'Preferential \nsampling'), size = 1, shape = 16) +
   geom_sf(data = spabal[spabal$SD == 'spabal',],
@@ -120,8 +122,8 @@ plot <- ggplot() +
           aes(color = 'Preferential \nsampling'), size = 1, shape = 16) +
   coord_sf(crs = 4326, xlim = ext(spabal)[1:2], ylim = ext(spabal)[3:4]) +
   theme_minimal() +
-  scale_fill_manual(values = c('No-take \nzones' = "#fff2cc", 'Community \ncomposition \nanalysis limits' = 'transparent')) +
-  scale_color_manual(values = c('Preferential \nsampling' = "#f1c232", 'Spatially \nbalanced \nsampling' = "#7f6000")) +
+  scale_fill_manual(values = c('No-take \nzones' = "#65743A", 'Community \ncomposition \nanalysis limits' = 'transparent')) +
+  scale_color_manual(values = c('Preferential \nsampling' = "#E5B25D", 'Spatially \nbalanced \nsampling' = "#6B0504")) +
   labs(fill = '', color = '') +
   theme(legend.position = "bottom",
         legend.box = "horizontal",
@@ -135,9 +137,9 @@ plot_zoom <- ggplot() + # zoomed in
   geom_sf(data = com_samp_area,
           aes(fill = 'Community \ncomposition \nanalysis limits'), color = "#f1c232", size = 5) +
   geom_sf(data = AMP[AMP$ZoneName == 'National Park Zone',],
-          aes(fill = 'No-take \nzones'), color = "#ffd966", size = 0.5) +
+          aes(fill = 'No-take \nzones'), alpha = 0.5, color = "#65743A", size = 0.5) +
   geom_sf(data = MPA,
-          aes(fill = 'No-take \nzones'), color = "#ffd966", size = 0.2) +
+          aes(fill = 'No-take \nzones'), alpha = 0.5, color = "#65743A", size = 0.2) +
   geom_sf(data = pref[pref$longitude > 115.3,],
           aes(color = 'Preferential \nsampling'), size = 1, shape = 16) +
   geom_sf(data = spabal[spabal$SD == 'spabal',],
@@ -146,8 +148,8 @@ plot_zoom <- ggplot() + # zoomed in
           aes(color = 'Preferential \nsampling'), size = 1, shape = 16) +
   coord_sf(crs = 4326, xlim = ext(com_samp_area)[1:2], ylim = ext(com_samp_area)[3:4]) +
   theme_minimal() +
-  scale_fill_manual(values = c('No-take \nzones' = "#fff2cc", 'Community \ncomposition \nanalysis limits' = 'transparent')) +
-  scale_color_manual(values = c('Preferential \nsampling' = "#f1c232", 'Spatially \nbalanced \nsampling' = "#7f6000")) +
+  scale_fill_manual(values = c('No-take \nzones' = "#65743A", 'Community \ncomposition \nanalysis limits' = 'transparent')) +
+  scale_color_manual(values = c('Preferential \nsampling' = "#E5B25D", 'Spatially \nbalanced \nsampling' = "#6B0504")) +
   labs(fill = '', color = '') +
   theme(legend.position = "bottom",
         legend.box = "horizontal",
@@ -198,6 +200,7 @@ MaxN            <- read.csv("data/tidy/2024_geographe_all_tidy_maxn.csv") %>% gl
 com_comp_maxn   <- readRDS('data/rmd/com_comp_maxn.rds') %>% glimpse()
 pref            <- readRDS('data/rmd/samples_sf_pref.rds') %>% glimpse()
 spabal          <- readRDS('data/rmd/samples_sf_sb.rds') %>% glimpse()
+clump           <- readRDS('data/rmd/samples_sf_clump.rds') %>% glimpse()
 
 real_bruv_metadata <- read.csv("data/tidy/2024_geographe_all_tidy_maxn.csv") %>%
   dplyr::select(opcode, status, sd) %>% 
@@ -302,13 +305,33 @@ simulated_bruvs_preferential <- pref %>%
   st_drop_geometry() %>%
   glimpse()
 
+# 4. Simulated BRUVs (Clustered Sampling desing)
+simulated_bruvs_cluster <- clump %>%
+  mutate(Strata = "Any strata", # Assign the single strata label
+         #in_SZ = str_detect(in_SZ, "SZ")
+         ) %>% # Identify if it's in the no-take zone
+  group_by(Strata, in_SZ) %>%  # Group by Strata and SZ status
+  summarize(n = n(), .groups = "drop") %>%  # Aggregate the counts
+  pivot_wider(names_from = in_SZ, values_from = n, values_fill = 0) %>%  # Reshape the data
+  summarize(  # Summarize to combine SZ and non-SZ totals
+    Category = "Simulated BRUVs (clustered sampling design)",
+    Row_Title = unique(Strata),
+    `Inside No-Take Area` = sum(`TRUE`),
+    `Outside No-Take Area` = sum(`FALSE`),
+    Total = `Inside No-Take Area` + `Outside No-Take Area`
+  ) %>%
+  st_drop_geometry() %>%
+  glimpse()
+
+
 # Combine Data Frames
 final_table <- bind_rows(
   real_bruvs,
   simulated_bruvs_balanced,
-  simulated_bruvs_preferential
+  simulated_bruvs_preferential,
+  simulated_bruvs_cluster
   ) %>%
-  arrange(Row_Title) %>%  # Arrange by the specified order
+  arrange(Category) %>%  # Arrange by the specified order
   glimpse()
 
 ```
@@ -322,15 +345,17 @@ final_table %>%
   kbl(caption = "BRUV Sampling Results", format = "html", escape = FALSE) %>%  # Allow HTML rendering
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F) %>%
   group_rows("a. Real BRUVs collected", 1, 3) %>%
-  group_rows("b. Simulated BRUVs (spatially balanced sampling design)", 4, 6) %>%
-  group_rows("c. Simulated BRUVs (preferential sampling design)", 7, 7)
+  group_rows("b. Simulated BRUVs (clustered sampling design)", 4, 4) %>% 
+  group_rows("c. Simulated BRUVs (preferential sampling design)", 5, 5) %>% 
+  group_rows("d. Simulated BRUVs (spatially balanced sampling design)", 6, 8)
+
 ```
 
-BRUVs were deployed according to two sampling designs: preferential sampling and spatially balanced sampling:
+Real BRUVs were deployed according to two sampling designs: clustered sampling and spatially balanced sampling:
 
--   Spatially balanced sampling aims to distribute sampling units randomly within strata of an environmental variable. This sampling design accounts for spatial heterogeneity and spatial autocorrelation [@Kermorvant2019]. More details on this sampling design is available further in section \@ref(sec:SD_sim).
+-   Spatially balanced sampling aims to distribute sampling units randomly within strata of an environmental variable. This sampling design accounts for spatial heterogeneity and spatial autocorrelation [@Kermorvant2019]. More details on the creation of this sampling design is available further in section \@ref(sec:SD_sim).
 
--   Preferential sampling locations were sought out for the seabed complexity of the area, aiming to deploy BRUVs near highly complex sections, where many species tend to aggregate [@Fernandez2008]. Deployments were either clustered around or aligned along seabed features (Figure \@ref(fig:real_BRUV_location).
+-   Clustered sampling locations were sought out for the seabed complexity of the area, aiming to deploy BRUVs near highly complex sections, where many species tend to aggregate [@Fernandez2008]. Deployments were either clustered around or aligned along seabed features, deploying a similar number of samples inside and outside the SZ. (Figure \@ref(fig:real_BRUV_location).
 
 ## Data analysis
 
@@ -338,25 +363,30 @@ BRUVs were deployed according to two sampling designs: preferential sampling and
 
 BRUV footage was annotated by research assistants trained in temperate Australian bony and cartilaginous fish species identification, to obtain MaxN (the greatest number of individuals of a species observed at one time in a deployment), lengths of individuals (possible through the stereo-video system), as well as habitat data [@Langlois2020]. Quality assurance was conducted through species identification cross-checking with other annotators, as well as through CheckEM (<https://github.com/GlobalArchiveManual/CheckEM>), a purpose-built application to compare identified species with their life histories and geographical ranges.
 
+
 ### Effect of sampling design on the detection of community composition differences around a NTZ
 
-The East Geographe NTZ (composed of National Park Zones and Sanctuary Zones) was used as a case study to assess whether the effect of marine protection on community composition was detected differently between sampling designs. This NTZ was the only area of the campaign where the inside and outside of the NTZ were sampled by both sampling designs. Spatially Balanced sample points were subsampled (Figure \@ref(fig:real_BRUV_location)) to match the Preferential sampling in and around the East Geographe NTZ for this part of the analysis. To investigate the difference in species composition between sampling designs, we conducted Principal Coordinate Analysis (PCoA; Bray-Curtis distances; vegan package, @Oksanen2013) and manyglm (negative binomial, adjusted p-values, mvabund package, @Wang2012), a generalised linear model framework for multivariate abundance data. Sampling design (preferential or spatially balanced) and status (NTZ or fished) were included in the model, to account for their potential effects on community composition [@Scott2022; @Watson2007]. Habitat and depth were purposefully not included in the model as we considered them to be a sampling design choice: Bathymetry plays a major role in sampling design choice (see 2.2.3.3 below), and is also a strong contributor to habitat type and species distribution [@Cameron2014]. Assumptions of log-linearity, homoscedasticity and normality were confirmed prior to analysis using the plot.manyglm and qqnorm functions.
+The East Geographe NTZ (composed of National Park Zones and Sanctuary Zones) was used as a case study to assess whether the effect of marine protection on community composition was detected differently between sampling designs. This NTZ was the only area of the campaign where the inside and outside of the NTZ were sampled by both sampling designs. For this part of the analysis, spatially balanced points were subsampled to match the clustered sampling area (Figure \@ref(fig:real_BRUV_location)). To investigate the difference in species composition between sampling designs, we conducted Principal Coordinate Analysis (PCoA; Bray-Curtis distances; vegan package, @Oksanen2013) and manyglm , a generalised linear model framework for multivariate abundance data (negative binomial, adjusted p-values, mvabund package, @Wang2012). Sampling design (clustered or spatially balanced) and status (NTZ or fished) were included in the model, to account for their potential effects on community composition [@Scott2022; @Watson2007]. Habitat and depth were purposefully not included in the model as we considered them to be a sampling design choice: Bathymetry plays a major role in sampling design choice (see 2.2.3.3 below), and is also a strong contributor to habitat type and species distribution [@Cameron2014]. Assumptions of log-linearity, homoscedasticity and normality were confirmed prior to analysis.
+
 
 ### Effect of sampling design on the detection of the NTZ effect of a single species
 
-To compare the sampling designs’ ability to detect the effect of a NTZ on a single species, we conducted simulations of sampling designs on a modelled abundance distribution of Yijarup/Pink Snapper (*C. auratus*) around a simulated NTZ.
+To compare the sampling designs’ ability to detect the effect of a NTZ on single species, we conducted simulations of sampling designs on a modelled abundance distribution of Yijarup/Pink Snapper (*C. auratus*) and (Wadandi name?)/Southern Maori Wrasse around a simulated NTZ.
+
+After modelling the distribution predictions of multiple species present in the dataset, these two species were chosen as they broadly represent two different spatial distribution strategies: Yijarup/Pink Snapper is highly mobile and predictions indicated a weak association with bathymetry and habitat feature, while (Wadandi name?)/Southern Maori Wrasse are less mobile and more associated to reef features. The performance of different sampling designs could therefore be compared for different species distribution types.
+
 
 #### Abundance distribution model
 
 To build the abundance distribution model, BRUV abundance data was used with several environmental variables obtained from observed and external data (Figure \@ref(fig:distribution_model_diagram)):
 
-To account for seabed morphology, 250m and 5m resolution bathymetry datasets from Geoscience Australia were tested as covariates in the spatial distribution model. The terrain function of the raster package [@Hijmans2015] also allowed bathymetry derivatives (aspect and roughness for both datasets and detrended bathymetry for the 250m dataset) to be tested in the model. Both resolutions were included to test the potential different biological scales that may affect Yijarup/Pink Snapper abundance. Habitat information from BRUV data was used to fit the spatial distribution model. Reef, seagrass and sand were tested, as Yijarup/Pink Snapper abundance has been found to be higher near structured habitat like reef and kelp [@Parsons2016; @Terres2015].
+To account for seabed morphology, 250m and 5m resolution bathymetry datasets from Geoscience Australia were tested as covariates in the spatial distribution model. The terrain function of the raster package [@Hijmans2015] also allowed bathymetry derivatives (aspect and roughness for both datasets and detrended bathymetry for the 250m dataset) to be tested in the model. Both resolutions were included to test different bathymetry and biological scales on fish abundance [@monk2011remotely; @pygas2020review]. 
 
-The distribution of Yijarup/Pink Snapper was then modelled using BRUV abundance data (all samples were included, preferential and spatially balanced). Only mature individuals (\>375mm, [@Wakefield2015] were used in models, as these larger fish tend to benefit from NTZ protection [@Alos2013; @Taylor2010]. Obtaining the lengths of fish in a video is dependent on whether the fish are visible and positioned correctly in the video frame, which may not be possible, and we acknowledge that the number of measured mature individuals may not reflect a. the MaxN in that particular video or b. their abundance in the area. Generalised Additive Models (using the FSSgam package in R, @FSSgam) were fitted to BRUV abundance data, using the habitat and bathymetry layers described above as covariates. The relative importance of variables was assessed using the generate.model.set function to select the optimal model by ranking viable model sets according to Akaike Information Criterion (AIC) values [@Fisher2018].
+Habitat information from BRUV data was used to fit the spatial distribution model. Habitat data was grouped into three broad habitat types : reef (hard substrate, macroalgae or sessile invertebrates), sand, and seagrass (which included epiphytes growing on seagrass). These categories represent the predominent habitat types in Waatern/Geographe Bay, and reef seems to be a predictor of Yijarup/Pink Snapper abundance [@Parsons2016; @Terres2015]. While bathymetry variables were already rasterised, no raster of habitat was deemed accurate or consistent enough to use for this distribution prediction. We therefore fitted binomial Generalised Additive Models (using the FSSgam package in R, @FSSgam) to successes and failures of observing each habitat type, using bathymetry and bathymetry derivatives described above to create layers of predicted habitat.
 
-While bathymetry variables were already rasterised, no raster of habitat was deemed accurate or consistent enough to use for this distribution prediction. We therefore fitted Generalised Additive Models (using the FSSgam package in R, @FSSgam) of seagrass, sand and reef habitats (the predominent habitat types in Waatern/Geographe Bay) from BRUV data to the bathymetry and bathymetry derivatives described above to create layers of predicted habitat to use in the Yijarup/Pink Snapper distribution prediction.
+The distribution of the two species was then modelled using the spatially balanced BRUV abundance data. Only mature individuals were used in models (Yijarup/Pink Snapper:\>375mm, @Wakefield2015, (Wadandi name?)/Southern Maori Wrasse: >284mm, @morton2007ecology), as these larger fish tend to benefit from NTZ protection [@Alos2013; @Taylor2010, @kleczkowski2008density, @mclaren2015small]. Obtaining the lengths of fish in a video is dependent on whether the fish are visible and positioned correctly in the video frame, which may not be possible, and we acknowledge that the number of measured mature individuals may not reflect a. the MaxN in that particular video or b. their abundance in the area. Generalised Additive Models (using the FSSgam package in R, @FSSgam) were fitted to BRUV abundance data, using the habitat and bathymetry layers described above as covariates. We used Tweedie distribution family in models after comparing it to Poisson and Negative Binomial (method following @virgili2017comparison) for both species. The relative importance of variables was assessed using the generate.model.set function to select the optimal model by ranking viable model sets according to Akaike Information Criterion (AIC) values [@Fisher2018].
 
-From this model, the distribution of Yijarup/Pink Snapper was predicted over the entirety of Waatern/Geographe Bay using the optimal model, and the predict.gam function of the mgcv package in R [@Wood2001]. Predictions were made within the range of observed environmental variables, to avoid extrapolating abundance values.
+The distribution of the two species was predicted over the entirety of Waatern/Geographe Bay using the optimal model, and the predict.gam function of the mgcv package in R [@Wood2001]. Predictions were made within the range of observed environmental variables (multivariate environmental similarity surface, @elith2010art), to avoid extrapolating abundance values.
 
 ```{r distribution_model_diagram, fig.cap = "Diagram of the species distribution model process"}
 
@@ -366,15 +396,17 @@ diagram
 
 ```
 
+
 #### Simulated NTZ
 
 To test the ability of each sampling design to detect a true increase in Yijarup/Pink Snapper abundance in NTZs, a simulated NTZ was designed in Waatern/Geographe Bay (Fig. \@ref(fig:example_sampling_design)). The location and size of the NTZ was chosen to be representative and realistic compared to existing NTZs in the area. The chosen area encompasses a reef feature along the coastline, which is protected by the East Geographe NTZs further southwest of the bay.
 
-The mean and standard errors of the predicted Yijarup/Pink Snapper abundance were increased uniformly by 80% within the NTZ to simulate a moderate ‘MPA effect’ on this recreational target species, as had been found for Yijarup/Pink Snapper by @Harasti2018.
+The mean and standard errors of the predicted Yijarup/Pink Snapper abundance were increased uniformly by 80% within the NTZ to simulate a moderate ‘MPA effect’ on this recreational target species, as had been found for Yijarup/Pink Snapper by @Harasti2018, and a small 'MPA effect' (Wadandi name?)/Southern Maori Wrasse as found by @kleczkowski2008density.
+
 
 #### Sampling design simulation
 
-The sampling design simulations were conducted in an area covering 223.5 km^2^, including \~86.1 km^2^ of NTZ and \~68.7 km^2^ on either side of the simulated NTZ. This aims to mimic the subsample of BRUVs analysed for community composition. Areas shallower than 7m were excluded, as these are rarely targeted in real BRUV campaigns. Two sampling designs were simulated to emulate real BRUV sampling conducted in Waatern/Geographe Bay:
+The sampling design simulations were conducted in an area covering 223.5 km^2^, including \~86.1 km^2^ of NTZ and \~68.7 km^2^ on either side of the simulated NTZ (\@red(fig:example_sampling_design). This aims to mimic the subsample of BRUVs analysed for community composition. Areas shallower than 7m were excluded, as these are rarely targeted in real BRUV campaigns. Three sampling designs were simulated to emulate real BRUV sampling conducted in Waatern/Geographe Bay:
 
 ##### a. Spatially Balanced Sampling Design
 
@@ -382,9 +414,16 @@ The spatially balanced sampling design was created by categorising the 250m detr
 
 ##### b. Preferential Sampling Design
 
-Samples were randomly distributed on the highest quantile of detrended bathymetry (Strata 3, Table \@ref(n_samples_table)), to mimic the preferential approach of real sampling. The number of samples per strata were decided based on the number of samples from a comparable area in the BRUV campaign of this paper (Table \@ref(n_samples_table)). The number of samples were then distributed using Generalised Random Tessellation Stratified (GRTS) sampling function from the spsurvey package in R [@Dumelle2023]. This method was iterated 1000 times to obtain a set of simulated preferential sampling designs.
+Samples were randomly distributed on the highest quantile of detrended bathymetry (Strata 3, Table \@ref(n_samples_table)), to mimic the designs of more focused research aims. The number of samples per strata were decided based on the number of samples from a comparable area in the BRUV campaign of this paper (Table \@ref(n_samples_table)). The number of samples were then distributed using Generalised Random Tessellation Stratified (GRTS) sampling function from the spsurvey package in R [@Dumelle2023]. This method was iterated 1000 times to obtain a set of simulated preferential sampling designs.
+
+
+##### c. Clustered Sampling Design
+
+Clustered sampling designs were created by distributing sampling points in 9 clusters (2 on either side of the SZ, and 2 within the SZ). Cluster centres were distributed on the highest quantile of detrended bathymetry (Strata 3, Table \@ref(n_samples_table)), and 8 points distributed normally around each cluster centre (on any bathymetry strata), with a standard deviation of 400m. Points were separated by at least 200m. Parameters were tested and chosen to resemble the real sampling design of the State monitoring programme. This method was iterated 1000 times to obtain a set of simulated preferential sampling designs.
+
 
 ```{r example_sampling_design_prep, include = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
+
 library(tidyverse)
 library(sf)
 library(raster)
@@ -393,103 +432,164 @@ library(terra)
 # Load layers
 target_crs <- 4326
 
-aus             <- st_read("data/spatial/shapefiles/wadandi_land.shp") %>% st_transform(crs=target_crs) # land shapefile
-SZ              <- st_read("data/spatial/shapefiles/simulated_SZ.shp") %>% st_transform(crs=target_crs) # simulated SZ shapefile
-sampling_area   <- readRDS("data/spatial/shapefiles/sampling_area_deeper_than_7m.rds") %>% st_transform(crs=target_crs) # simulation area
+aus                 <- st_read("data/spatial/shapefiles/wadandi_land.shp") %>% st_transform(crs=target_crs) # land shapefile
+SZ                  <- st_read("data/spatial/shapefiles/simulated_SZ.shp") %>% st_transform(crs=target_crs) # simulated SZ shapefile
+sampling_area       <- readRDS("data/spatial/shapefiles/sampling_area_deeper_than_7m.rds") %>% st_transform(crs=target_crs) # simulation area
 
-sf_all          <- readRDS('data/rmd/samp_area_detrended.rds') %>% st_transform(crs=target_crs) # detrended bathymetry strata in the simulation area
-samples_sf_pref <- readRDS('data/rmd/samples_sf_pref.rds') %>% st_transform(crs=target_crs) # example points for simulated preferential design
-samples_sf_sb   <- readRDS('data/rmd/samples_sf_sb.rds') %>% st_transform(crs=target_crs) # example points for simulated spatially balanced design
+sf_all              <- readRDS('data/rmd/samp_area_detrended.rds') %>% st_transform(crs=target_crs) # detrended bathymetry strata in the simulation area
+samples_sf_pref     <- readRDS('data/rmd/samples_sf_pref.rds') %>% st_transform(crs=target_crs) # example points for simulated preferential design
+samples_sf_sb       <- readRDS('data/rmd/samples_sf_sb.rds') %>% st_transform(crs=target_crs) # example points for simulated spatially balanced design
+samples_sf_clump    <- readRDS('data/rmd/samples_sf_clump.rds') %>% st_transform(crs=target_crs) # example points for simulated clustered design
 
-mature_pred <- as.data.frame(readRDS("outputs/Length_comparison/predicted_abundance_rasters/mature_predicted_abundance_SZ_increase.rds"), xy=TRUE)
+mature_pred_PS      <- as.data.frame(readRDS("outputs/Length_comparison/predicted_abundance_rasters/SZ_increase/mature_predicted_abundance_Chrysophrys_auratus_SZ_increase.rds"), xy=TRUE)
+
+mature_pred_SMW     <- as.data.frame(readRDS("outputs/Length_comparison/predicted_abundance_rasters/SZ_increase/mature_predicted_abundance_Ophthalmolepis_lineolatus_SZ_increase.rds"), xy=TRUE)
+
 ```
 
-```{r example_sampling_design, fig.cap = 'Examples of a. Spatially balanced sampling design simulation and b. Preferential sampling design simulation around the simulated NTZ. C. Predicted abundance around the simulation area with 80% increase in C. auratus within the simulated NTZ.', echo = FALSE, message = FALSE, warning = FALSE}
+```{r example_sampling_design, fig.cap = 'Examples of a. Spatially balanced sampling design simulation, b. Preferential sampling design simulation and c. clustered sampling design simulation around the simulated NTZ. Predicted abundance with an 80% increase within the NTZ for d. Yijarup/Pink Snapper (*Chrysophrys auratus*) and e. Southern Maori Wrasse (*Ophthalmolepis lineolatus*)', echo = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse); library(sf); library(ggpubr); library(raster); library(terra)
 
-p1 <- ggarrange(
-  ggplot() +
+palette <- c("#980000", "#b45f06", "#FFA400", "#41521F", "#073763")
+
+ex_spabal <- ggplot() +
     geom_sf(data = sf_all, aes(fill = as.factor(detrended)), colour = NA) +
     scale_fill_manual(values = c("0" = "#F5F5F5", "1" = "#E0E0E0", "2" = "#9E9E9E"),
                       na.value = NA,
                       labels = c("0" = "Strata 1 - low",
                                  "1" = "Strata 2 - medium",
                                  "2" = "Strata 3 - high")) +
-    labs(fill = "Detrended bathymetry",
-         title = "a.") +
-    geom_sf(data = SZ, colour = "#7f6000", fill = NA, linewidth = 1) +
+    labs(fill = "Detrended bathymetry") +
+    geom_sf(data = SZ, colour = "#41521F", fill = NA, linewidth = 1) +
     geom_sf(data = aus, color = "darkgray", fill = 'lightgray',  size = 0.2) +
     geom_sf(data = samples_sf_sb, aes(colour = "Simulated sample points")) +
     coord_sf(crs = 4326, xlim = ext(sampling_area)[1:2], ylim = ext(sampling_area)[3:4]) +
-    scale_color_manual(name = '', values = c('Simulated sample points' = 'red')) +
+    scale_color_manual(name = '', values = c('Simulated sample points' = 'darkred')) +
     theme_minimal() +
     theme(axis.text = element_blank(),
-          axis.ticks = element_blank()),
+          axis.ticks = element_blank())
 
-  ggplot() +
+ex_pref <- ggplot() +
     geom_sf(data = sf_all, aes(fill = as.factor(detrended)), colour = NA) +
     scale_fill_manual(values = c("0" = "#F5F5F5", "1" = "#E0E0E0", "2" = "#9E9E9E"),
                       na.value = NA,
                       labels = c("0" = "Strata 1 - low",
                                  "1" = "Strata 2 - medium",
                                  "2" = "Strata 3 - high")) +
-    labs(fill = "Detrended bathymetry",
-         title = "b.") +
+    labs(fill = "Detrended bathymetry") +
     geom_sf(data = SZ, aes(colour = "Simulated SZ"), fill = NA, linewidth = 1) +
     geom_sf(data = aus, color = "darkgray", fill = 'lightgray',  size = 0.2) +
     geom_sf(data = samples_sf_pref, aes(colour = "Simulated sample points")) +
     coord_sf(crs = 4326, xlim = ext(sampling_area)[1:2], ylim = ext(sampling_area)[3:4]) +
-    scale_color_manual(name = '', values = c('Simulated sample points' = 'red', 'Simulated SZ'= "#7f6000")) +
+    scale_color_manual(name = '', values = c('Simulated sample points' = 'darkred', 'Simulated SZ'= "#7f6000")) +
     theme_minimal() +
     theme(axis.text = element_blank(),
-          axis.ticks = element_blank()),
-  ncol = 2, nrow = 1, common.legend = TRUE, legend = "right"
-)
+          axis.ticks = element_blank())
 
-p2 <- ggplot() +
-  geom_raster(data = mature_pred, aes(x = x, y = y, fill = p_mature.fit), interpolate = TRUE) +
-  geom_sf(data = sampling_area, aes(color = 'Simulation area'),
-          fill = 'transparent', linewidth = 1) +
-  geom_sf(data = SZ, aes(color = 'Simulated NTZ'),
-          fill = 'transparent', linewidth = 1) +
-  scale_color_manual(name = '',
-                     values = c('Simulation area' = '#f1c232', 'Simulated NTZ' = '#7f6000')) +
-  geom_sf(data = aus, color = "darkgray", fill = 'lightgray',  size = 0.2) +
-  scale_fill_gradient(name = 'Predicted Abundance',
-                      limits = c(0, 50),
-                      low = "#fff2cc", high = "#7f6000", na.value=NA) +
-  labs(title = "c.") +
-  theme_minimal() +
-  theme(axis.text = element_blank(),
+ex_clump <- ggplot() +
+    geom_sf(data = sf_all, aes(fill = as.factor(detrended)), colour = NA) +
+    scale_fill_manual(values = c("0" = "#F5F5F5", "1" = "#E0E0E0", "2" = "#9E9E9E"),
+                      na.value = NA,
+                      labels = c("0" = "Strata 1 - low",
+                                 "1" = "Strata 2 - medium",
+                                 "2" = "Strata 3 - high")) +
+    labs(fill = "Detrended bathymetry") +
+    geom_sf(data = SZ, colour = "#41521F", fill = NA, linewidth = 1) +
+    geom_sf(data = aus, color = "darkgray", fill = 'lightgray',  size = 0.2) +
+    geom_sf(data = samples_sf_clump, aes(colour = "Simulated sample points")) +
+    coord_sf(crs = 4326, xlim = ext(sampling_area)[1:2], ylim = ext(sampling_area)[3:4]) +
+    scale_color_manual(name = '', values = c('Simulated sample points' = 'darkred')) +
+    theme_minimal() +
+    theme(axis.text = element_blank(),
+          axis.ticks = element_blank()) +
+      theme(axis.text = element_blank(),
         axis.ticks = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank()) + 
+        legend.position = "none")
+
+PS_raster <- ggplot() +
+    geom_raster(data = mature_pred_PS, aes(x = x, y = y, fill = p_mature.fit), interpolate = TRUE) +
+    geom_sf(data = sampling_area, aes(color = 'Simulation area'),
+            fill = 'transparent', linewidth = 1) +
+    geom_sf(data = SZ, aes(color = 'Simulated NTZ'),
+            fill = 'transparent', linewidth = 1) +
+    scale_color_manual(name = '',
+                       values = c('Simulation area' = '#f1c232', 'Simulated NTZ' = '#7f6000')) +
+    geom_sf(data = aus, color = "darkgray", fill = 'lightgray',  size = 0.2) +
+    scale_fill_gradient(name = 'Predicted Abundance',
+                        limits = c(0, 7),
+                        low = "#fff2cc", high = "#7f6000", na.value=NA) +
+    theme_minimal() +
+    theme(axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank()) +
     coord_sf(
-    xlim = c(st_bbox(sampling_area)["xmin"], st_bbox(sampling_area)["xmax"]),
-    ylim = c(st_bbox(sampling_area)["ymin"], st_bbox(sampling_area)["ymax"]),
-    expand = FALSE
+      xlim = c(st_bbox(sampling_area)["xmin"], st_bbox(sampling_area)["xmax"]),
+      ylim = c(st_bbox(sampling_area)["ymin"], st_bbox(sampling_area)["ymax"]),
+      expand = FALSE
+    )
+  
+SMW_raster <- ggplot() +
+    geom_raster(data = mature_pred_SMW, aes(x = x, y = y, fill = p_mature.fit), interpolate = TRUE) +
+    geom_sf(data = sampling_area, aes(color = 'Simulation area'),
+            fill = 'transparent', linewidth = 1) +
+    geom_sf(data = SZ, aes(color = 'Simulated NTZ'),
+            fill = 'transparent', linewidth = 1) +
+    scale_color_manual(name = '',
+                       values = c('Simulation area' = '#f1c232', 'Simulated NTZ' = '#7f6000')) +
+    geom_sf(data = aus, color = "darkgray", fill = 'lightgray',  size = 0.2) +
+    scale_fill_gradient(name = 'Predicted Abundance',
+                        limits = c(0, 7),
+                        low = "#fff2cc", high = "#7f6000", na.value=NA) +
+    theme_minimal() +
+    theme(axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank()) +
+    coord_sf(
+      xlim = c(st_bbox(sampling_area)["xmin"], st_bbox(sampling_area)["xmax"]),
+      ylim = c(st_bbox(sampling_area)["ymin"], st_bbox(sampling_area)["ymax"]),
+      expand = FALSE
   )
 
-ggarrange(p1, p2, nrow=2)
+library(ggpubr)
+
+# Extract common legend from one of the ex_ plots
+legend <- get_legend(ex_spabal + theme(legend.position = "right"))
+
+# Arrange the plots
+final_plot <- ggarrange(
+  ggarrange(ex_spabal + theme(legend.position = "none"), 
+            ex_pref + theme(legend.position = "none"), 
+            ex_clump + theme(legend.position = "none"), 
+            nrow = 1, labels = c("a.", "b.", "c.")),  # First row
+  
+  ggarrange(PS_raster + theme(legend.position = "none"), 
+            SMW_raster + theme(legend.position = "none"), 
+            legend,
+            nrow = 1, labels = c("d.", "e.", "")),  # Second row
+  
+  ncol = 1, heights = c(5, 5)  # Adjust heights to balance layout
+)
+
+
+# Print final plot
+print(final_plot)
 ```
+
 
 #### Analysis of simulation
 
-Values of abundance were obtained from the latitude and longitude of the `r final_table$Total[final_table$Category == "Simulated BRUVs (preferential sampling design)"]` simulated points of each of the 2000 simulations. To account for the biological variability of Yijarup/Pink Snapper, and the uncertainty associated with detecting *x* individuals consistently where *x* individuals are predicted to be, each sampling point could observe one abundance value within the Normal distribution of abundance of that raster pixel (rnorm function in base R). For each sampling design, two comparisons were made:
+Values of abundance were obtained from the latitude and longitude of the `r final_table$Total[final_table$Category == "Simulated BRUVs (preferential sampling design)"]` simulated points of each of the 3000 simulations. To account for the biological variability of each species, and the uncertainty associated with detecting *x* individuals consistently where *x* individuals are predicted to be, each sampling point could observe one abundance value within the Normal distribution of abundance of that raster pixel (rnorm function in base R). We compared the performance of the sampling designs based on several metrics:
 
--   Control-Impact (CI) comparison: The ratio of the mean abundance of Yijarup/Pink Snapper inside and outside the simulated NTZ after the abundance increase. This replicates a common monitoring strategy where the effect of the MPA is assessed by comparing the metric of interest in the MPA site (Impact) to that of a similar non-protected site (Control). (Equation 1) [@Underwood1991]
+-   Control-Impact (CI) comparison: The ratio of the mean abundance of fish inside and outside the simulated NTZ after the abundance increase. This replicates a common monitoring strategy where the effect of the MPA is assessed by comparing the metric of interest in the MPA site (Impact) to that of a similar non-protected site (Control). (Equation 1) [@Underwood1991]
 
 $$
 R_{\text{CI}} = \frac{\mu_{\text{NTZ, after}}}{\mu_{\text{fished}}} \tag{1}
-$$ - Before-After-Control-Impact (BACI) comparison: The difference of the ratios of the mean abundance of Yijarup/Pink Snapper inside and outside the simulated NTZ, before and after the abundance increase. This replicates the monitoring strategy outlined by @Underwood1991, where the impact of an MPA can be better described by using NTZ sites (Impact) and unprotected sites (Control), over time (Equation 2).
-
-$$
-R_{\text{BACI}} = \frac{\mu_{\text{NTZ, after}} - \mu_{\text{NTZ, before}}}{\mu_{\text{fished}}} \tag{2}
-$$
-
+$$ 
 # Results
 
-A total of `r final_table$Total[final_table$Row_Title == "Preferential Sampling"] + final_table$Total[final_table$Row_Title == "Spatially Balanced Sampling (full data)"]` BRUV samples were collected, including `r final_table$Total[final_table$Row_Title == "Preferential Sampling"]` preferential and `r final_table$Total[final_table$Row_Title == "Spatially Balanced Sampling (full data)"]` spatially balanced samples (Table \@ref(tab:n_samples_table)). A total of `r length(unique(MaxN$fullspp))` species were detected in samples, including `r length(grep("spp|sp1|sp2|unknown|sp", unique(MaxN$fullspp), ignore.case = TRUE))` species identified to the Genus or Family level and `r length(unique(MaxN$fullspp)) - length(grep("spp|sp1|sp2|unknown|sp", unique(MaxN$fullspp), ignore.case = TRUE))` species identified to the species level. Certain species with very similar appearance (=difficult to identify/differentiate with certainty) were grouped together to form a complex, and are considered as one species.
+A total of `r final_table$Total[final_table$Row_Title == "Preferential Sampling"] + final_table$Total[final_table$Row_Title == "Spatially Balanced Sampling (full data)"]` BRUV samples were collected, including `r final_table$Total[final_table$Row_Title == "Preferential Sampling"]` preferential and `r final_table$Total[final_table$Row_Title == "Spatially Balanced Sampling (full data)"]` spatially balanced samples (Table \@ref(tab:n_samples_table)). A total of `r length(unique(MaxN$fullspp))` species were detected in samples, including `r length(grep("spp|sp1|sp2|unknown|sp", unique(MaxN$fullspp), ignore.case = TRUE))` species identified to the Genus or Family level and `r length(unique(MaxN$fullspp)) - length(grep("spp|sp1|sp2|unknown|sp", unique(MaxN$fullspp), ignore.case = TRUE))` species identified to the species level. Certain species that were difficult to identify or differentiate with certainty were grouped together to form a complex, and are considered as one species.
 
 Within the yellow box specified in Fig. \@ref(fig:example_sampling_design), `r final_table[[3]][final_table$Row_Title == "Preferential Sampling"]` preferential samples were collected inside the NTZ, and `r final_table[[4]][final_table$Row_Title == "Preferential Sampling"]` were collected outside. In the same area, `r final_table[[3]][final_table$Row_Title == "Spatially Balanced Sampling (subset data)"]` spatially balanced samples were collected inside the NTZ, and `r final_table[[4]][final_table$Row_Title == "Spatially Balanced Sampling (subset data)"]` were collected outside the NTZ.
 
@@ -659,52 +759,176 @@ ggplot(pcoa_scores, aes(x = V1, y = V2)) +
 
 The PCoA and manyglm model highlighted differences in fish community composition between the two sampling designs (Figure \@ref(fig:PCoA_plot)). Community composition was significantly different between sampling design. A total of `r nrow(major_species)` species drove the pattern in the PCoA (correlation \> `r threshold`) (Figure \@ref(fig:PCoA_plot)). The effect of NTZ on community composition was not significant (Table \@ref(tab:manyglm_output_table)).
 
-## Effect of sampling design on the detection of the NTZ effect of a single species
+## Effect of sampling design on the detection of the NTZ effect of single species
 
 ```{r gam_distribution_model, include = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
 library(mgcv)
 library(broom)
+library(dplyr)
 
 dat <- readRDS('data/rmd/gam_model_data.rds')
-best.model.name <- readRDS("data/rmd/gam_best_model.rds") # variables of best model, modify the gam below accordingly
 
-m_mature <- gam(count_mature ~ # See 03_gam script for model selection process
-                  s(detrended_250m, k = 3, bs = "cr") +
-                  s(reef_250m, k = 3, bs = "cr") +
-                  s(sand_250m, k = 3, bs = "cr"),
-                data = dat, method = "REML", family = poisson(link = "log"))
 
-summary(m_mature)
+# Snapper ---------------------------------------------------------------------
 
-plot(m_mature, pages = 1, residuals = T, cex = 5)
+pred.vars <- c("bathy_250m", "aspect_250m", 
+               "roughness_250m", "detrended_250m", 
+               "reef_250m", "sand_250m", "seagrass_250m"
+               )
 
-gam.check(m_mature)
-k.check(m_mature)
+model_spp <- "Chrysophrys auratus"
+
+dat_filtered <- dat[dat$full_spp %in% model_spp,] %>%
+  group_by(latitude, longitude, ID,
+           !!!syms(pred.vars) # select environmental variables listed above
+  ) %>%
+  summarise(
+    count_mature = sum(count_mature, na.rm = TRUE),
+    count_immature = sum(count_immature, na.rm = TRUE),
+    .groups = 'drop'
+  ) %>%
+  ungroup() %>%
+  glimpse()
+
+use.dat <- na.omit(dat_filtered)
+use.dat <- as.data.frame(use.dat)
+
+best_model_name_PS <- readRDS("data/rmd/gam_best_model_full_data_Chrysophrys_auratus.rds") # variables of best model
+
+# Using the best models above, fitting a GAM to mature fish
+best_model_vars_PS <- strsplit(best_model_name_PS, "\\+")[[1]]; best_model_vars_PS
+
+# Format variables correctly for the gam to interpret
+make_vars <- function(vars) {
+  result <- sapply(vars, function(var) {
+    # Check if 'aspect' is part of the variable name
+    bs_type <- ifelse(grepl("aspect", var), "cc", "cr")
+    
+    # Create the s() format for each variable with the correct bs value
+    paste0("s(", var, ", k = 3, bs = '", bs_type, "')")
+  })
+  
+  # Join the results into a single string, separated by '+'
+  return(paste(result, collapse = " + "))
+}
+best_vars_PS <- make_vars(best_model_vars_PS)
+
+# Use a function to automatically fit the model, filtered to the model_spp data, and to the optimal variables
+make_optimal_model <- function(vars, family) {
+  # Create the model formula as a string
+  formula_str <- paste("count_mature ~", vars)
+  
+  # Fit the model using the formula string
+  model <- gam(as.formula(formula_str),
+               data = use.dat, method = "REML", family = family)
+  return(model)
+}
+m_mature_PS <- make_optimal_model(best_vars_PS, tw())
+
+summary(m_mature_PS)
+plot(m_mature_PS, pages = 1, residuals = T, cex = 5)
+
+gam.check(m_mature_PS)
+k.check(m_mature_PS)
 
 # Modify the gsub below to match variables in optimal model
-tidy_model <- tidy(m_mature)
-colnames(tidy_model) <- c("Variable", "Estimate", "Std. Error", "t value", "Pr(>|t|)")
-tidy_model$Variable <- gsub("s\\(detrended_250m\\)", "Detrended bathymetry (250m resolution)", tidy_model$Variable)
-tidy_model$Variable <- gsub("s\\(reef_250m\\)", "Reef (250m resolution)", tidy_model$Variable)
-tidy_model$Variable <- gsub("s\\(sand_250m\\)", "Sand (250m resolution)", tidy_model$Variable)
-tidy_model[2:5] <- round(tidy_model[2:5], 3)
+tidy_model_PS <- tidy(m_mature_PS)
+colnames(tidy_model_PS) <- c("Variable", "Estimate", "Std. Error", "t value", "Pr(>|t|)")
+tidy_model_PS$Variable <- gsub("s\\(seagrass_250m\\)", "Seagrass (250m resolution)", tidy_model_PS$Variable)
+tidy_model_PS[2:5] <- round(tidy_model_PS[2:5], 3)
+
+
+# Wrasse ----------------------------------------------------------------------
+
+model_spp <- "Ophthalmolepis lineolatus"
+
+pred.vars <- c("bathy_250m", "aspect_250m", 
+               "roughness_250m", "detrended_250m", 
+               "reef_250m", "sand_250m", "seagrass_250m",
+               "bathy_lidar", "roughness_lidar", #"aspect_lidar",
+               "reef_lidar", "sand_lidar", "seagrass_lidar"
+               )
+
+dat_filtered <- dat[dat$full_spp %in% model_spp,] %>%
+  group_by(latitude, longitude, ID,
+           !!!syms(pred.vars) # select environmental variables listed above
+  ) %>%
+  summarise(
+    count_mature = sum(count_mature, na.rm = TRUE),
+    count_immature = sum(count_immature, na.rm = TRUE),
+    .groups = 'drop'
+  ) %>%
+  ungroup() %>%
+  glimpse()
+use.dat <- na.omit(dat_filtered)
+use.dat <- as.data.frame(use.dat)
+
+best_model_name_SMW <- readRDS("data/rmd/gam_best_model_Ophthalmolepis_lineolatus.rds") # variables of best model, modify the gam below accordingly
+
+# Using the best models above, fitting a GAM to mature fish
+best_model_vars_SMW <- strsplit(best_model_name_SMW, "\\+")[[1]]; best_model_vars_SMW
+
+# Format variables correctly for the gam to interpret
+make_vars <- function(vars) {
+  result <- sapply(vars, function(var) {
+    # Check if 'aspect' is part of the variable name
+    bs_type <- ifelse(grepl("aspect", var), "cc", "cr")
+    
+    # Create the s() format for each variable with the correct bs value
+    paste0("s(", var, ", k = 3, bs = '", bs_type, "')")
+  })
+  
+  # Join the results into a single string, separated by '+'
+  return(paste(result, collapse = " + "))
+}
+best_vars_SMW <- make_vars(best_model_vars_SMW)
+
+# Use a function to automatically fit the model, filtered to the model_spp data, and to the optimal variables
+make_optimal_model <- function(vars, family) {
+  # Create the model formula as a string
+  formula_str <- paste("count_mature ~", vars)
+  
+  # Fit the model using the formula string
+  model <- gam(as.formula(formula_str),
+               data = use.dat, method = "REML", family = family)
+  return(model)
+}
+m_mature_SMW <- make_optimal_model(best_vars_SMW, tw())
+
+summary(m_mature_SMW)
+
+plot(m_mature_SMW, pages = 1, residuals = T, cex = 5)
+
+gam.check(m_mature_SMW)
+k.check(m_mature_SMW)
+
+# Modify the gsub below to match variables in optimal model
+tidy_model_SMW <- tidy(m_mature_SMW)
+colnames(tidy_model_SMW) <- c("Variable", "Estimate", "Std. Error", "t value", "Pr(>|t|)")
+tidy_model_SMW$Variable <- gsub("s\\(bathy_250m\\)", "Bathymetry (250m resolution)", tidy_model_SMW$Variable)
+tidy_model_SMW$Variable <- gsub("s\\(reef_250m\\)", "Reef (250m resolution)", tidy_model_SMW$Variable)
+tidy_model_SMW$Variable <- gsub("s\\(detrended_250m\\)", "Detrended bathymetry (250m resolution)", tidy_model_SMW$Variable)
+tidy_model_SMW[2:5] <- round(tidy_model_SMW[2:5], 3)
 
 ```
 
 ```{r gam_table, tab.cap = "Generalised Additive model of *C.auratus* abundance", echo = FALSE, message = FALSE, warning = FALSE}
-knitr::kable(tidy_model)
+knitr::kable(tidy_model_PS)
+knitr::kable(tidy_model_SMW)
+
 
 ```
 
-From all the BRUV samples, a distribution model was fitted to bathymetry and habitat covariates. The optimal model included sand, seagrass and detrended bathymetry as covariates, all from the 250m resolution dataset. The final model explained `r round(((1 - (deviance(m_mature) / deviance(update(m_mature, . ~ 1))))*100), 2)`% of deviance in the data.
+From all the BRUV samples, a distribution model was fitted to bathymetry and habitat covariates. The optimal model for Yijarup/Pink Snapper included seagrass only as a covariate from the 250m resolution dataset. The final model explained `r round(((1 - (deviance(m_mature_PS) / deviance(update(m_mature_PS, . ~ 1))))*100), 2)`% of deviance in the data. The optimal model for (Wadandi name?)/Southern Maori Wrasse included bathymetry, detrended bathymetry and reef, all from the 250m resolution dataset. The final model explained `r round(((1 - (deviance(m_mature_SMW) / deviance(update(m_mature_SMW, . ~ 1))))*100), 2)`% of deviance in the data.
 
 ```{r sampling_design_performance_mean_abundance, include = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
-SD_points <- readRDS('data/rmd/SD_points.rds')
+SD_points_PS <- readRDS('data/rmd/SD_points_full_data_Chrysophrys_auratus.rds')
+SD_points_SMW <- readRDS('data/rmd/SD_points_Ophthalmolepis_lineolatus.rds')
 
 library(tidyverse)
 library(kableExtra)
 
-summary_table <- SD_points %>%
+summary_table_PS <- SD_points_PS %>%
   group_by(SD, in_SZ) %>%
   # Summarize the mean random abundances for before and after
   summarize(
@@ -714,21 +938,64 @@ summary_table <- SD_points %>%
   ) %>%
   # Pivot the data to have SD as rows and before/after as columns
   pivot_wider(
-    names_from = in_SZ, 
+    names_from = in_SZ,
     values_from = c(mean_random_abundance_before, mean_random_abundance_after),
     names_glue = "{in_SZ}_{.value}"
   ) %>%
   # Recode SD names for clarity
-  mutate(SD = recode(SD, 
-                     "pref" = "Preferential", 
-                     "spabal" = "Spatially Balanced")) %>% 
+  mutate(SD = recode(SD,
+                     "pref" = "Preferential",
+                     "spabal" = "Spatially Balanced",
+                     "clump" = "Clustered")) %>%
   glimpse()
-summary_table[2:5] <- round(summary_table[2:5], 3)
+
+summary_table_PS[2:5] <- round(summary_table_PS[2:5], 3)
+
+# Wrasse ----------------------------------------------------------------------
+
+summary_table_SMW <- SD_points_SMW %>%
+  group_by(SD, in_SZ) %>%
+  # Summarize the mean random abundances for before and after
+  summarize(
+    mean_random_abundance_before = mean(random_abundance_before, na.rm = TRUE),
+    mean_random_abundance_after = mean(random_abundance_after, na.rm = TRUE),
+    .groups = "drop"  # Remove grouping after summarizing
+  ) %>%
+  # Pivot the data to have SD as rows and before/after as columns
+  pivot_wider(
+    names_from = in_SZ,
+    values_from = c(mean_random_abundance_before, mean_random_abundance_after),
+    names_glue = "{in_SZ}_{.value}"
+  ) %>%
+  # Recode SD names for clarity
+  mutate(SD = recode(SD,
+                     "pref" = "Preferential",
+                     "spabal" = "Spatially Balanced",
+                     "clump" = "Clustered")) %>%
+  glimpse()
+
+summary_table_SMW[2:5] <- round(summary_table_SMW[2:5], 3)
+
+# Combine ---------------------------------------------------------------------
+
+summary_table_PS <- summary_table_PS %>%
+  mutate(Species = "PS")
+
+summary_table_SMW <- summary_table_SMW %>%
+  mutate(Species = "SMW")
+
+# Combine the two tables
+summary_table_combined <- bind_rows(summary_table_PS, summary_table_SMW) %>%
+  relocate(Species, .before = SD)  # Move Species column to the front
+
+# View the combined table
+glimpse(summary_table_combined)
 
 ```
 
 ```{r sampling_design_mean_abundance_summary_table, tab.cap= 'Mean abundance obtained from the 2000 sampling design simulations.', echo = FALSE, message = FALSE, warning = FALSE}
-summary_table %>%
+
+summary_table_combined %>%
   kable("html", col.names = c("SD", "Fished", "No-take", "Fished", "No-Take")) %>%
   kable_styling("striped", full_width = TRUE) %>%
   add_header_above(c(" " = 1, "Before" = 2, "After" = 2), align = "c")  # Add custom header row
@@ -736,9 +1003,13 @@ summary_table %>%
 ```
 
 ```{r sampling_design_performance_%_correct, include = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
-SD_points <- readRDS('data/rmd/SD_points.rds')
 
-dat <- SD_points %>% # Re-organising the dataframe so it's easier to work with.
+SD_points_PS <- readRDS('data/rmd/SD_points_Chrysophrys_auratus.rds')
+SD_points_SMW <- readRDS('data/rmd/SD_points_Ophthalmolepis_lineolatus.rds')
+
+# Snapper ---------------------------------------------------------------------
+
+dat_PS <- SD_points_PS %>% # Re-organising the dataframe so it's easier to work with.
   pivot_longer(
     cols = c(random_abundance_before, random_abundance_after),
     names_to = "BA",
@@ -748,107 +1019,208 @@ dat <- SD_points %>% # Re-organising the dataframe so it's easier to work with.
   dplyr::select(c(ID_1, design_id, SD, BA, random_abundance, in_SZ)) %>%
   glimpse()
 
-ratio_CI <- dat %>%
+ratio_CI_PS <- dat_PS %>%
   group_by(design_id, SD, BA, in_SZ) %>%
-  filter(in_SZ == 'TRUE') %>% 
+  filter(in_SZ == 'TRUE') %>%
   summarize(mean_random_abundance = mean(random_abundance, na.rm = TRUE)) %>%
   spread(key = BA, value = mean_random_abundance) %>%
-  mutate(abundance_ratio = `after` / `before`) %>% 
-  ungroup() %>% 
+  mutate(abundance_ratio = `after` / `before`) %>%
+  ungroup() %>%
   glimpse()
 
-ratio_BACI <- dat %>%
-  group_by(design_id, SD, BA, in_SZ) %>%
-  summarize(mean_random_abundance = mean(random_abundance, na.rm = TRUE)) %>%
-  spread(key = in_SZ, value = mean_random_abundance) %>%
-  mutate(abundance_ratio = `TRUE` / `FALSE`) %>% 
-  ungroup() %>% 
-  group_by(design_id, SD) %>% # Group by design_id and SD
-  summarize(
-    abundance_ratio_diff = abundance_ratio[BA == 'after'] - abundance_ratio[BA == 'before'],
-    .groups = "drop" # Ensures the result is not grouped
-  ) %>%
-  glimpse()
-
-percentage_CI <- ratio_CI %>%
+percentage_CI_PS <- ratio_CI_PS %>%
   filter(abundance_ratio >= 1.8*0.9 & abundance_ratio <= 1.8*1.1) %>% # i want only the ratios that are within 10% of the 1.8x increase.
   group_by(SD) %>%  # Group by SD
   summarise(
     perc = n() / nrow(ratio_CI %>% filter(SD == SD)) * 100  # Calculate percentage that's within 10% of 1.8x increase
   )
-glimpse(percentage_CI) # That is terrible performance my dude.
-  
+glimpse(percentage_CI_PS) # That is terrible performance my dude.
 
-percentage_BACI <- ratio_BACI %>%
-  filter(abundance_ratio_diff >= 0.8*0.9 & abundance_ratio_diff <= 0.8*1.1) %>% # i want only the ratios that are within 10% of the 1.8x increase.
+
+# Wrasse ----------------------------------------------------------------------
+
+dat_SMW <- SD_points_SMW %>% # Re-organising the dataframe so it's easier to work with.
+  pivot_longer(
+    cols = c(random_abundance_before, random_abundance_after),
+    names_to = "BA",
+    values_to = "random_abundance"
+  ) %>%
+  mutate(BA = recode(BA, "random_abundance_before" = "before", "random_abundance_after" = "after")) %>%
+  dplyr::select(c(ID_1, design_id, SD, BA, random_abundance, in_SZ)) %>%
+  glimpse()
+
+ratio_CI_SMW <- dat_SMW %>%
+  group_by(design_id, SD, BA, in_SZ) %>%
+  filter(in_SZ == 'TRUE') %>%
+  summarize(mean_random_abundance = mean(random_abundance, na.rm = TRUE)) %>%
+  spread(key = BA, value = mean_random_abundance) %>%
+  mutate(abundance_ratio = `after` / `before`) %>%
+  ungroup() %>%
+  glimpse()
+
+percentage_CI_SMW <- ratio_CI_SMW %>%
+  filter(abundance_ratio >= 1.8*0.9 & abundance_ratio <= 1.8*1.1) %>% # i want only the ratios that are within 10% of the 1.8x increase.
   group_by(SD) %>%  # Group by SD
   summarise(
-    perc = n() / nrow(ratio_BACI %>% filter(SD == SD)) * 100  # Calculate percentage that's within 10% of 1.8x increase
+    perc = n() / nrow(ratio_CI %>% filter(SD == SD)) * 100  # Calculate percentage that's within 10% of 1.8x increase
   )
-glimpse(percentage_BACI) # That is terrible performance my dude.
+glimpse(percentage_CI_SMW) # That is terrible performance my dude.
+
+##
+
+
+files <- list.files(
+  path = "outputs/Length_comparison/sampling_designs/ratios/", 
+  pattern = "sampling_design_ratio_", 
+  full.names = TRUE
+)
+
+full_data_Chrysophrys_auratus <- readRDS(files[[4]]) %>% 
+  mutate(species = "full data Chrysophrys_auratus") %>% 
+  glimpse()
+
+Ophthalmolepis_lineolatus <- readRDS(files[[5]]) %>% 
+  mutate(species = "Ophthalmolepis_lineolatus") %>% 
+  glimpse()
+
+dat <- rbind(full_data_Chrysophrys_auratus,
+             Ophthalmolepis_lineolatus
+             )
+
+
+
+percentage_after <- dat %>%
+  filter(abundance_ratio >= lower_bound & abundance_ratio <= upper_bound) %>%  # Filter for the desired range
+  group_by(SD, species) %>%
+  summarise(percentage_within_bounds = n() / nrow(ratio_after %>% filter(SD == first(SD))) * 100) %>%   # Calculate the percentage for each SD
+  glimpse()
+
+ggplot(dat, aes(x = abundance_ratio, fill = SD)) +
+  geom_histogram(alpha = 0.7, position = "identity", bins = 20) +
+  facet_wrap(~ species) +
+  scale_fill_manual(values = c("spabal" = "#fff2cc", "pref" = "#f1c232", "clump" = "#7f6000")) +
+  labs(title = paste("Abundance Ratio Distributions inside/outside \n", spp), x = "abundance ratio inside/outside", y = "Count") +
+  geom_vline(xintercept = 1.8, color = "red", linetype = "dashed", linewidth = 1) +
+  annotate("rect", xmin = 0.9 * 1.8, xmax = 1.1 * 1.8, ymin = -Inf, ymax = Inf,
+           fill = "red", alpha = 0.2) +  # The correct ratio is 1.8 for CI
+  theme_minimal()
+
+ggplot(dat, aes(x = SD, y = abundance_ratio, fill = SD)) +
+  annotate("rect", xmin = -Inf, xmax = Inf, ymin = 1.7, ymax = 1.9, 
+           fill = "red", alpha = 0.2) + 
+  geom_hline(yintercept = 1.8, color = "red", linetype = "dashed", linewidth = 1) +
+  geom_boxplot(alpha = 0.7) + 
+  facet_wrap(~ species) +  # Separate by species
+  scale_fill_manual(values = c("spabal" = "#fff2cc", "pref" = "#f1c232", "clump" = "#7f6000")) +
+  labs(x = "SD",
+       y = "Abundance Ratio") +
+  theme_minimal()
+
+
+
+
+count_data <- dat %>%
+  group_by(species, SD) %>%
+  summarize(
+    count_in_range = sum(abundance_ratio >= 1.7 & abundance_ratio <= 1.9),
+    total_count = n(),  # Total number of rows for that species and SD
+    .groups = "drop"
+  ) %>%
+  mutate(percentage = (count_in_range / total_count) * 100)  # Calculate percentage
+
+
+# Create the plot
+ggplot(dat, aes(x = SD, y = abundance_ratio, fill = SD)) +
+  annotate("rect", xmin = -Inf, xmax = Inf, ymin = 1.7, ymax = 1.9, 
+           fill = "red", alpha = 0.2) + 
+  geom_hline(yintercept = 1.8, color = "red", linetype = "dashed", linewidth = 1) +
+  geom_boxplot(alpha = 0.7) + 
+  facet_wrap(~ species) +  # Separate by species
+  scale_fill_manual(values = c("spabal" = "#fff2cc", "pref" = "#f1c232", "clump" = "#7f6000")) +
+  labs(x = "SD",
+       y = "Abundance Ratio") +
+  theme_minimal() +
+  geom_text(data = count_data, aes(x = SD, y = 1.95, label = paste0(round(percentage, 1), "%")), 
+            color = "black", fontface = "bold", size = 5)  # Display % instead of count
+
+
+ggplot(dat, aes(x = abundance_ratio, fill = SD)) +
+  #annotate("rect", xmin = -Inf, xmax = Inf, ymin = 1.7, ymax = 1.9, 
+  #         fill = "red", alpha = 0.2) + 
+  #geom_vline(yintercept = 1.8, color = "red", linetype = "dashed", linewidth = 1) +
+  geom_density(alpha = 0.7) +  # Density plot for abundance_ratio
+  facet_wrap(~ species) +  # Separate by species
+  scale_fill_manual(values = c("spabal" = "#fff2cc", "pref" = "#f1c232", "clump" = "#7f6000")) +
+  labs(x = "Abundance Ratio",
+       y = "Density") +
+  theme_minimal() +
+  geom_text(data = count_data, aes(x = 2, y = 1.95, label = paste0(round(percentage, 1), "%")), 
+            color = "black", fontface = "bold", size = 5)  # Display % above the shaded region
+
+
 
 ```
 
 ```{r ratio_barplot, fig.cap = "Histogram of the Control-Impact (CI) and Before-After-Control-Impact (BACI) comparisons. The red dashed line indicates the true ratio (1.8 for CI, and 0.8 for BACI), and the red box indicates 10% either side of the true ratio.", echo = FALSE, message = FALSE, warning = FALSE}
-library(ggplot2)
-library(cowplot)
-
-# BACI plot
-BACI <- ggplot(ratio_BACI, aes(x = abundance_ratio_diff, fill = SD)) +
-  geom_histogram(bins = 30, position = "dodge", alpha = 0.7) +
-  facet_wrap(~ SD, 
-             labeller = labeller(SD = c("pref" = "Preferential", 
-                                        "spabal" = "Spatially Balanced"))) +
-  scale_fill_manual(values = c("pref" = "#f1c232", 
-                               "spabal" = "#7f6000")) +
-  theme_minimal() +  
-  theme(
-    legend.position = "none",
-    plot.title = element_text(hjust = 0.5, face = 'bold'),  # Center title
-    axis.title.x = element_blank(),
-    axis.title.y = element_blank()
-  ) +
-  labs(
-    title = "Before-After-Control-Impact") +
-  geom_vline(xintercept = 0.8, color = "red", linetype = "dashed", linewidth = 1) +
-  annotate("rect", xmin = 0.9 * 0.8, xmax = 1.1 * 0.8, ymin = -Inf, ymax = Inf,
-           fill = "red", alpha = 0.2)  # The correct ratio is 0.8 for BACI
-
-# CI plot
-CI <- ggplot(ratio_CI, aes(x = abundance_ratio, fill = SD)) +
-  geom_histogram(bins = 30, position = "dodge", alpha = 0.7) +
-  facet_wrap(~ SD, 
-             labeller = labeller(SD = c("pref" = "Preferential", 
-                                        "spabal" = "Spatially Balanced"))) +
-  scale_fill_manual(values = c("pref" = "#f1c232", 
-                               "spabal" = "#7f6000")) +
-  theme_minimal() +  
-  theme(
-    legend.position = "none",
-    plot.title = element_text(hjust = 0.5, face = 'bold'),  # Center title
-    axis.title.x = element_blank(),
-    axis.title.y = element_blank()
-  ) +
-  labs(
-    title = "Control-Impact") +
-  geom_vline(xintercept = 1.8, color = "red", linetype = "dashed", linewidth = 1) +
-  annotate("rect", xmin = 0.9 * 1.8, xmax = 1.1 * 1.8, ymin = -Inf, ymax = Inf,
-           fill = "red", alpha = 0.2)  # The correct ratio is 1.8 for CI
-
-combined_plot <- plot_grid(
-  CI, BACI,
-  ncol = 1,
-  align = "h",
-  rel_heights = c(0.5, 0.5)
-)
-
-# Add common axis labels with extra margin
-combined_plot + 
-  draw_label("Response Ratio", x = 0.5, y = 0, hjust = 0.5, vjust = 0.5) +
-  draw_label("Number of Simulations", x = 0, y = 0.5, hjust = 0.5, vjust = 0.5, angle = 90) +
-  theme(
-    plot.margin = margin(20, 20, 40, 20)
-  )
+# library(ggplot2)
+# library(cowplot)
+# 
+# # BACI plot
+# BACI <- ggplot(ratio_BACI, aes(x = abundance_ratio_diff, fill = SD)) +
+#   geom_histogram(bins = 30, position = "dodge", alpha = 0.7) +
+#   facet_wrap(~ SD, 
+#              labeller = labeller(SD = c("pref" = "Preferential", 
+#                                         "spabal" = "Spatially Balanced"))) +
+#   scale_fill_manual(values = c("pref" = "#f1c232", 
+#                                "spabal" = "#7f6000")) +
+#   theme_minimal() +  
+#   theme(
+#     legend.position = "none",
+#     plot.title = element_text(hjust = 0.5, face = 'bold'),  # Center title
+#     axis.title.x = element_blank(),
+#     axis.title.y = element_blank()
+#   ) +
+#   labs(
+#     title = "Before-After-Control-Impact") +
+#   geom_vline(xintercept = 0.8, color = "red", linetype = "dashed", linewidth = 1) +
+#   annotate("rect", xmin = 0.9 * 0.8, xmax = 1.1 * 0.8, ymin = -Inf, ymax = Inf,
+#            fill = "red", alpha = 0.2)  # The correct ratio is 0.8 for BACI
+# 
+# # CI plot
+# CI <- ggplot(ratio_CI, aes(x = abundance_ratio, fill = SD)) +
+#   geom_histogram(bins = 30, position = "dodge", alpha = 0.7) +
+#   facet_wrap(~ SD, 
+#              labeller = labeller(SD = c("pref" = "Preferential", 
+#                                         "spabal" = "Spatially Balanced"))) +
+#   scale_fill_manual(values = c("pref" = "#f1c232", 
+#                                "spabal" = "#7f6000")) +
+#   theme_minimal() +  
+#   theme(
+#     legend.position = "none",
+#     plot.title = element_text(hjust = 0.5, face = 'bold'),  # Center title
+#     axis.title.x = element_blank(),
+#     axis.title.y = element_blank()
+#   ) +
+#   labs(
+#     title = "Control-Impact") +
+#   geom_vline(xintercept = 1.8, color = "red", linetype = "dashed", linewidth = 1) +
+#   annotate("rect", xmin = 0.9 * 1.8, xmax = 1.1 * 1.8, ymin = -Inf, ymax = Inf,
+#            fill = "red", alpha = 0.2)  # The correct ratio is 1.8 for CI
+# 
+# combined_plot <- plot_grid(
+#   CI, BACI,
+#   ncol = 1,
+#   align = "h",
+#   rel_heights = c(0.5, 0.5)
+# )
+# 
+# # Add common axis labels with extra margin
+# combined_plot + 
+#   draw_label("Response Ratio", x = 0.5, y = 0, hjust = 0.5, vjust = 0.5) +
+#   draw_label("Number of Simulations", x = 0, y = 0.5, hjust = 0.5, vjust = 0.5, angle = 90) +
+#   theme(
+#     plot.margin = margin(20, 20, 40, 20)
+#   )
 
 ```
 
@@ -870,7 +1242,7 @@ In the CI comparison, the ratio in the modelled abundance ratio of Yijarup/Pink 
 
 # Discussion
 
-In this study, the performance of preferential and spatially balanced BRUV sampling designs are compared as MPA monitoring tools for single species detection and community composition at the local scale. Results highlight the importance of sampling design choice for BRUV studies, and how both designs may under- or over-estimate the effects of NTZs on single target species such as Yijarup/Pink Snapper at this scale.
+In this study, the performance of preferential and spatially balanced BRUV sampling designs are compared as MPA monitoring tools for single species detection and community composition at the local scale. Results highlight the importance of sampling design choice for BRUV studies, and the estimation tendency of different spatial sampling strategies on fish abundance
 
 
 ## Community composition
