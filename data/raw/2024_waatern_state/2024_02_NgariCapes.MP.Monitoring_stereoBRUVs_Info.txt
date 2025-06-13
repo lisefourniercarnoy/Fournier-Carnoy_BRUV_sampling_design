@@ -1,0 +1,174 @@
+OpCode	TapeReader	Depth	Comment	Info5Name	Info5Value	Info6Name	Info6Value	Info7Name	Info7Value	Info8Name	Info8Value	Info9Name	Info9Value	Info10Name	Info10Value	Info11Name	Info11Value	Info12Name	Info12Value
+CF1-1	Belle Mullins	34		Date	17/02/2024	Time	13:45:47	Location	Ngari Capes	Site	CF1	Status	Fished	Latitude	-34.03173347	Longitude	114.9630679	Visibility	
+CF1-2	Belle Mullins	35		Date	17/02/2024	Time	13:41:56	Location	Ngari Capes	Site	CF1	Status	Fished	Latitude	-34.03477328	Longitude	114.9618176	Visibility	
+CF1-3	Belle Mullins	33		Date	17/02/2024	Time	13:59:40	Location	Ngari Capes	Site	CF1	Status	Fished	Latitude	-34.02833703	Longitude	114.9645395	Visibility	
+CF1-4	Nidhi	35		Date	17/02/2024	Time	13:55:35	Location	Ngari Capes	Site	CF1	Status	Fished	Latitude	-34.03049647	Longitude	114.9596724	Visibility	
+CF1-5	Belle Mullins	23		Date	17/02/2024	Time	13:50:21	Location	Ngari Capes	Site	CF1	Status	Fished	Latitude	-34.0314446	Longitude	114.9672181	Visibility	
+CF2-1	Belle Mullins	35		Date	18/02/2024	Time	12:10:12	Location	Ngari Capes	Site	CF2	Status	Fished	Latitude	-34.04882763	Longitude	114.9615251	Visibility	
+CF2-2	Belle Mullins	34		Date	18/02/2024	Time	12:13:45	Location	Ngari Capes	Site	CF2	Status	Fished	Latitude	-34.04885642	Longitude	114.9581501	Visibility	
+CF2-3	Belle Mullins	34		Date	18/02/2024	Time	12:16:38	Location	Ngari Capes	Site	CF2	Status	Fished	Latitude	-34.04614553	Longitude	114.9615516	Visibility	
+CF2-4	Belle Mullins	32		Date	18/02/2024	Time	12:03:02	Location	Ngari Capes	Site	CF2	Status	Fished	Latitude	-34.05187022	Longitude	114.9614303	Visibility	
+CF2-5	Belle Mullins	32		Date	18/02/2024	Time	12:05:53	Location	Ngari Capes	Site	CF2	Status	Fished	Latitude	-34.05022763	Longitude	114.9645072	Visibility	
+CF3-1	Belle Mullins	35		Date	18/02/2024	Time	11:50:35	Location	Ngari Capes	Site	CF3	Status	No-take	Latitude	-34.07060458	Longitude	114.9600988	Visibility	
+CF3-2	Belle Mullins	28		Date	18/02/2024	Time	11:57:33	Location	Ngari Capes	Site	CF3	Status	No-take	Latitude	-34.06770152	Longitude	114.959271	Visibility	
+CF3-3	Belle Mullins	33		Date	18/02/2024	Time	11:53:58	Location	Ngari Capes	Site	CF3	Status	No-take	Latitude	-34.07025552	Longitude	114.9557442	Visibility	
+CF3-4	Belle Mullins	32		Date	18/02/2024	Time	11:47:11	Location	Ngari Capes	Site	CF3	Status	No-take	Latitude	-34.07080053	Longitude	114.9639244	Visibility	
+CF3-5	Belle Mullins	34		Date	18/02/2024	Time	11:44:23	Location	Ngari Capes	Site	CF3	Status	No-take	Latitude	-34.07358433	Longitude	114.9588213	Visibility	
+CF4-1	Belle Mullins	33		Date	18/02/2024	Time	10:10:18	Location	Ngari Capes	Site	CF4	Status	No-take	Latitude	-34.08754717	Longitude	114.9633138	Visibility	
+CF4-2	Belle Mullins	33		Date	18/02/2024	Time	10:13:34	Location	Ngari Capes	Site	CF4	Status	No-take	Latitude	-34.08807385	Longitude	114.9595879	Visibility	
+CF4-3	Belle Mullins	33		Date	18/02/2024	Time	10:16:13	Location	Ngari Capes	Site	CF4	Status	No-take	Latitude	-34.08496047	Longitude	114.9611276	Visibility	
+CF4-4	Belle Mullins	33		Date	18/02/2024	Time	10:19:12	Location	Ngari Capes	Site	CF4	Status	No-take	Latitude	-34.08608947	Longitude	114.9668564	Visibility	
+CF4-5	Belle Mullins	32		Date	18/02/2024	Time	10:07:56	Location	Ngari Capes	Site	CF4	Status	No-take	Latitude	-34.08977418	Longitude	114.9656054	Visibility	
+CF5-1	Belle Mullins	32		Date	18/02/2024	Time	9:59:21	Location	Ngari Capes	Site	CF5	Status	No-take	Latitude	-34.10426937	Longitude	114.959977	Visibility	
+CF5-2	Belle Mullins	37		Date	18/02/2024	Time	10:01:46	Location	Ngari Capes	Site	CF5	Status	No-take	Latitude	-34.10275713	Longitude	114.9568119	Visibility	
+CF5-3	Belle Mullins	38		Date	18/02/2024	Time	9:53:18	Location	Ngari Capes	Site	CF5	Status	No-take	Latitude	-34.10806518	Longitude	114.956583	Visibility	
+CF5-4	Belle Mullins	33		Date	18/02/2024	Time	9:50:30	Location	Ngari Capes	Site	CF5	Status	No-take	Latitude	-34.10718065	Longitude	114.9596545	Visibility	
+CF5-5	Belle Mullins	40		Date	18/02/2024	Time	9:55:59	Location	Ngari Capes	Site	CF5	Status	No-take	Latitude	-34.10528595	Longitude	114.9542246	Visibility	
+CF6-1	Belle Mullins	32		Date	18/02/2024	Time	8:09:13	Location	Ngari Capes	Site	CF6	Status	Fished	Latitude	-34.12747602	Longitude	114.9704378	Visibility	
+CF6-2	Belle Mullins	37		Date	18/02/2024	Time	8:04:24	Location	Ngari Capes	Site	CF6	Status	Fished	Latitude	-34.13100002	Longitude	114.9651927	Visibility	
+CF6-3	Belle Mullins	32		Date	18/02/2024	Time	8:01:20	Location	Ngari Capes	Site	CF6	Status	Fished	Latitude	-34.13106193	Longitude	114.9707304	Visibility	
+CF6-4	Belle Mullins	35		Date	18/02/2024	Time	8:12:38	Location	Ngari Capes	Site	CF6	Status	Fished	Latitude	-34.12856532	Longitude	114.9674699	Visibility	
+CF6-5	Belle Mullins	37		Date	18/02/2024	Time	8:15:26	Location	Ngari Capes	Site	CF6	Status	Fished	Latitude	-34.12697952	Longitude	114.9640873	Visibility	
+CF7-1	Belle Mullins	33		Date	18/02/2024	Time	7:52:05	Location	Ngari Capes	Site	CF7	Status	Fished	Latitude	-34.1445476	Longitude	114.9777757	Visibility	
+CF7-2	Belle Mullins	34		Date	18/02/2024	Time	7:44:54	Location	Ngari Capes	Site	CF7	Status	Fished	Latitude	-34.14780387	Longitude	114.9772656	Visibility	
+CF7-3	Belle Mullins	32		Date	18/02/2024	Time	7:41:14	Location	Ngari Capes	Site	CF7	Status	Fished	Latitude	-34.1458502	Longitude	114.981461	Visibility	
+CF7-4	Belle Mullins	35		Date	18/02/2024	Time	7:54:55	Location	Ngari Capes	Site	CF7	Status	Fished	Latitude	-34.14461112	Longitude	114.9735967	Visibility	
+CF7-5	Belle Mullins	32		Date	18/02/2024	Time	7:49:00	Location	Ngari Capes	Site	CF7	Status	Fished	Latitude	-34.14155213	Longitude	114.9792093	Visibility	
+CL1-1	Belle Mullins	26		Date	19/02/2024	Time	9:17:27	Location	Ngari Capes	Site	CL1	Status	Fished	Latitude	-34.35738465	Longitude	115.0641301	Visibility	
+CL1-2	Belle Mullins	28		Date	19/02/2024	Time	9:12:07	Location	Ngari Capes	Site	CL1	Status	Fished	Latitude	-34.3555034	Longitude	115.0617505	Visibility	
+CL1-3	Belle Mullins	30		Date	19/02/2024	Time	9:14:27	Location	Ngari Capes	Site	CL1	Status	Fished	Latitude	-34.3584267	Longitude	115.0614947	Visibility	
+CL1-4	Belle Mullins	22		Date	19/02/2024	Time	9:09:33	Location	Ngari Capes	Site	CL1	Status	Fished	Latitude	-34.35533462	Longitude	115.0657459	Visibility	
+CL1-5	Belle Mullins	22		Date	19/02/2024	Time	9:19:46	Location	Ngari Capes	Site	CL1	Status	Fished	Latitude	-34.35769202	Longitude	115.0671867	Visibility	
+CL2-1	Belle Mullins	27		Date	19/02/2024	Time	9:31:52	Location	Ngari Capes	Site	CL2	Status	Fished	Latitude	-34.36453757	Longitude	115.0729773	Visibility	
+CL2-2	Belle Mullins	26		Date	19/02/2024	Time	9:22:38	Location	Ngari Capes	Site	CL2	Status	Fished	Latitude	-34.36200398	Longitude	115.0727547	Visibility	
+CL2-3	Belle Mullins	22		Date	19/02/2024	Time	9:35:00	Location	Ngari Capes	Site	CL2	Status	Fished	Latitude	-34.36383397	Longitude	115.0758329	Visibility	
+CL2-4	Belle Mullins	29		Date	19/02/2024	Time	9:25:07	Location	Ngari Capes	Site	CL2	Status	Fished	Latitude	-34.36365113	Longitude	115.0701177	Visibility	
+CL2-5	Belle Mullins	29		Date	19/02/2024	Time	9:29:42	Location	Ngari Capes	Site	CL2	Status	Fished	Latitude	-34.36632113	Longitude	115.0706228	Visibility	
+CL3-1	Belle Mullins	27		Date	19/02/2024	Time	11:11:51	Location	Ngari Capes	Site	CL3	Status	No-take	Latitude	-34.37880013	Longitude	115.0884664	Visibility	
+CL3-2	Belle Mullins	24		Date	19/02/2024	Time	11:06:49	Location	Ngari Capes	Site	CL3	Status	No-take	Latitude	-34.37802613	Longitude	115.085734	Visibility	
+CL3-3	Belle Mullins	28		Date	19/02/2024	Time	11:09:24	Location	Ngari Capes	Site	CL3	Status	No-take	Latitude	-34.38023438	Longitude	115.0860879	Visibility	
+CL3-4	Belle Mullins	27		Date	19/02/2024	Time	11:14:25	Location	Ngari Capes	Site	CL3	Status	No-take	Latitude	-34.38021182	Longitude	115.0909157	Visibility	
+CL3-5	Belle Mullins	25		Date	19/02/2024	Time	11:04:06	Location	Ngari Capes	Site	CL3	Status	No-take	Latitude	-34.37658418	Longitude	115.0898914	Visibility	
+CL4-1	Belle Mullins	27		Date	19/02/2024	Time	11:25:40	Location	Ngari Capes	Site	CL4	Status	No-take	Latitude	-34.38604443	Longitude	115.0988379	Visibility	
+CL4-2	Belle Mullins	27		Date	19/02/2024	Time	11:18:01	Location	Ngari Capes	Site	CL4	Status	No-take	Latitude	-34.38347382	Longitude	115.0994062	Visibility	
+CL4-3	Belle Mullins	28		Date	19/02/2024	Time	11:21:22	Location	Ngari Capes	Site	CL4	Status	No-take	Latitude	-34.38579242	Longitude	115.0955289	Visibility	
+CL4-4	Belle Mullins	26		Date	19/02/2024	Time	11:27:51	Location	Ngari Capes	Site	CL4	Status	No-take	Latitude	-34.38606073	Longitude	115.1019724	Visibility	
+CL4-5	Belle Mullins	29		Date	19/02/2024	Time	11:23:42	Location	Ngari Capes	Site	CL4	Status	No-take	Latitude	-34.3880188	Longitude	115.0967954	Visibility	
+CL5-1	Belle Mullins	29		Date	19/02/2024	Time	15:06:23	Location	Ngari Capes	Site	CL5	Status	No-take	Latitude	-34.39314682	Longitude	115.1104418	Visibility	
+CL5-2	Belle Mullins	27		Date	19/02/2024	Time	15:11:46	Location	Ngari Capes	Site	CL5	Status	No-take	Latitude	-34.39065872	Longitude	115.1095405	Visibility	
+CL5-3	Belle Mullins	30		Date	19/02/2024	Time	15:09:02	Location	Ngari Capes	Site	CL5	Status	No-take	Latitude	-34.39271745	Longitude	115.1074262	Visibility	
+CL5-4	Belle Mullins	27		Date	19/02/2024	Time	15:13:58	Location	Ngari Capes	Site	CL5	Status	No-take	Latitude	-34.39080323	Longitude	115.1130732	Visibility	
+CL5-5	Belle Mullins	28		Date	19/02/2024	Time	15:03:51	Location	Ngari Capes	Site	CL5	Status	No-take	Latitude	-34.39335053	Longitude	115.1135813	Visibility	
+CL6-1	Belle Mullins	30		Date	19/02/2024	Time	13:10:46	Location	Ngari Capes	Site	CL6	Status	Fished	Latitude	-34.40825513	Longitude	115.1216204	Visibility	
+CL6-2	Belle Mullins	30		Date	19/02/2024	Time	13:07:56	Location	Ngari Capes	Site	CL6	Status	Fished	Latitude	-34.4065293	Longitude	115.1243669	Visibility	
+CL6-3	Belle Mullins	30		Date	19/02/2024	Time	13:05:21	Location	Ngari Capes	Site	CL6	Status	Fished	Latitude	-34.405634	Longitude	115.1201434	Visibility	
+CL6-4	Belle Mullins	24		Date	19/02/2024	Time	13:17:01	Location	Ngari Capes	Site	CL6	Status	Fished	Latitude	-34.41037335	Longitude	115.1191248	Visibility	
+CL6-5	Belle Mullins	30		Date	19/02/2024	Time	13:14:22	Location	Ngari Capes	Site	CL6	Status	Fished	Latitude	-34.40805912	Longitude	115.1176383	Visibility	
+CL7-1	Belle Mullins	32		Date	19/02/2024	Time	13:27:12	Location	Ngari Capes	Site	CL7	Status	Fished	Latitude	-34.41614272	Longitude	115.1300863	Visibility	
+CL7-2	Belle Mullins	31		Date	19/02/2024	Time	13:20:49	Location	Ngari Capes	Site	CL7	Status	Fished	Latitude	-34.41323843	Longitude	115.1293174	Visibility	
+CL7-3	Belle Mullins	33		Date	19/02/2024	Time	13:30:03	Location	Ngari Capes	Site	CL7	Status	Fished	Latitude	-34.41528687	Longitude	115.1261604	Visibility	
+CL7-4	Belle Mullins	31		Date	19/02/2024	Time	13:24:13	Location	Ngari Capes	Site	CL7	Status	Fished	Latitude	-34.41584357	Longitude	115.1332605	Visibility	
+CL7-5		31		Date	19/02/2024	Time	13:33:15	Location	Ngari Capes	Site	CL7	Status	Fished	Latitude	-34.41869977	Longitude	115.1294048	Visibility	
+CNB1-1	Nidhi	21		Date	14/02/2024	Time	9:25:25	Location	Ngari Capes	Site	CNB1	Status	Fished	Latitude	-33.51987027	Longitude	115.0231149	Visibility	
+CNB1-2	Nidhi Menon	19		Date	14/02/2024	Time	9:35:47	Location	Ngari Capes	Site	CNB1	Status	Fished	Latitude	-33.52180867	Longitude	115.0234808	Visibility	
+CNB1-3	Nidhi	24		Date	14/02/2024	Time	9:48:36	Location	Ngari Capes	Site	CNB1	Status	Fished	Latitude	-33.51892727	Longitude	115.0253445	Visibility	
+CNB1-4	Nidhi	27		Date	14/02/2024	Time	9:41:36	Location	Ngari Capes	Site	CNB1	Status	Fished	Latitude	-33.5174244	Longitude	115.0231664	Visibility	
+CNB1-5	Nidhi Menon	19		Date	14/02/2024	Time	10:01:27	Location	Ngari Capes	Site	CNB1	Status	Fished	Latitude	-33.52145085	Longitude	115.0262758	Visibility	
+CNB2-1	Nidhi	16		Date	14/02/2024	Time	10:15:03	Location	Ngari Capes	Site	CNB2	Status	Fished	Latitude	-33.5200519	Longitude	115.017059	Visibility	
+CNB2-2	Nidhi	29		Date	14/02/2024	Time	10:28:12	Location	Ngari Capes	Site	CNB2	Status	Fished	Latitude	-33.51525638	Longitude	115.0163244	Visibility	
+CNB2-3	Nidhi	33		Date	14/02/2024	Time	10:33:34	Location	Ngari Capes	Site	CNB2	Status	Fished	Latitude	-33.51857495	Longitude	115.0152655	Visibility	
+CNB2-4	Nidhi	23		Date	14/02/2024	Time	10:45:50	Location	Ngari Capes	Site	CNB2	Status	Fished	Latitude	-33.51837692	Longitude	115.0180961	Visibility	
+CNB2-5	Nidhi	26		Date	14/02/2024	Time	10:49:30	Location	Ngari Capes	Site	CNB2	Status	Fished	Latitude	-33.5171097	Longitude	115.0166196	Visibility	
+CNB3-1	Belle Mullins	32		Date	14/02/2024	Time	12:48:42	Location	Ngari Capes	Site	CNB2	Status	Fished	Latitude	-33.5182261166667	Longitude	115.00645605	Visibility	
+CNB3-2	Nidhi	29		Date	14/02/2024	Time	12:53:44	Location	Ngari Capes	Site	CNB3	Status	No-take	Latitude	-33.52057265	Longitude	115.0054445	Visibility	
+CNB3-3	Nidhi	27		Date	14/02/2024	Time	12:58:04	Location	Ngari Capes	Site	CNB3	Status	No-take	Latitude	-33.52235223	Longitude	115.0068621	Visibility	
+CNB3-4	Nidhi	22		Date	14/02/2024	Time	13:02:20	Location	Ngari Capes	Site	CNB3	Status	No-take	Latitude	-33.52224195	Longitude	115.0100438	Visibility	
+CNB3-5	Nidhi Menon	27		Date	14/02/2024	Time	13:05:57	Location	Ngari Capes	Site	CNB3	Status	No-take	Latitude	-33.52008323	Longitude	115.0085451	Visibility	
+CNB4-1	Nidhi Menon	25		Date	14/02/2024	Time	13:11:26	Location	Ngari Capes	Site	CNB4	Status	No-take	Latitude	-33.52201972	Longitude	114.9986951	Visibility	
+CNB4-2	Nidhi Menon	35		Date	14/02/2024	Time	13:15:12	Location	Ngari Capes	Site	CNB4	Status	No-take	Latitude	-33.52319437	Longitude	114.9953871	Visibility	
+CNB4-3	Nidhi Menon	36		Date	14/02/2024	Time	13:18:49	Location	Ngari Capes	Site	CNB4	Status	No-take	Latitude	-33.52148235	Longitude	114.9931857	Visibility	
+CNB4-4	Nidhi Menon	30		Date	14/02/2024	Time	13:24:19	Location	Ngari Capes	Site	CNB4	Status	No-take	Latitude	-33.52426822	Longitude	114.99771	Visibility	
+CNB4-5	Nidhi Menon	42		Date	14/02/2024	Time	13:27:51	Location	Ngari Capes	Site	CNB4	Status	No-take	Latitude	-33.5207773	Longitude	114.9957992	Visibility	
+CNB5-1	Nidhi Menon	27		Date	15/02/2024	Time	15:07:36	Location	Ngari Capes	Site	CNB5	Status	No-take	Latitude	-33.53460847	Longitude	114.9963092	Visibility	
+CNB5-2	Nidhi Menon	31		Date	15/02/2024	Time	15:11:05	Location	Ngari Capes	Site	CNB5	Status	No-take	Latitude	-33.53511485	Longitude	114.9934529	Visibility	
+CNB5-3	Nidhi Menon	27		Date	15/02/2024	Time	15:13:52	Location	Ngari Capes	Site	CNB5	Status	No-take	Latitude	-33.53687935	Longitude	114.9963208	Visibility	
+CNB5-4		19		Date	15/02/2024	Time	15:17:33	Location	Ngari Capes	Site	CNB5	Status	No-take	Latitude	-33.53526435	Longitude	114.9989022	Visibility	
+CNB5-5	Nidhi Menon	23		Date	15/02/2024	Time	15:20:52	Location	Ngari Capes	Site	CNB5	Status	No-take	Latitude	-33.53232937	Longitude	114.9967849	Visibility	
+CNB6-1	Nidhi Menon	25		Date	17/02/2024	Time	10:06:37	Location	Ngari Capes	Site	CNB6	Status	Fished	Latitude	-33.54810528	Longitude	114.9986138	Visibility	
+CNB6-2	Nidhi Menon	25		Date	17/02/2024	Time	7:47:49	Location	Ngari Capes	Site	CNB6	Status	Fished	Latitude	-33.54598377	Longitude	114.9982838	Visibility	
+CNB6-3	Nidhi Menon	28		Date	17/02/2024	Time	7:51:09	Location	Ngari Capes	Site	CNB6	Status	Fished	Latitude	-33.54518875	Longitude	114.995907	Visibility	
+CNB6-4	Nidhi Menon	21		Date	17/02/2024	Time	7:55:19	Location	Ngari Capes	Site	CNB6	Status	Fished	Latitude	-33.54530572	Longitude	115.0005619	Visibility	
+CNB6-5	Nidhi Menon	25		Date	17/02/2024	Time	7:58:04	Location	Ngari Capes	Site	CNB6	Status	Fished	Latitude	-33.54355242	Longitude	114.9983536	Visibility	
+CNB7-1	Nidhi Menon	28		Date	17/02/2024	Time	8:03:46	Location	Ngari Capes	Site	CNB7	Status	Fished	Latitude	-33.55392427	Longitude	114.9992392	Visibility	
+CNB7-2	Belle Mullins	33		Date	17/02/2024	Time	8:06:44	Location	Ngari Capes	Site	CNB7	Status	Fished	Latitude	-33.55479127	Longitude	114.9971649	Visibility	
+CNB7-3	Belle Mullins	27		Date	17/02/2024	Time	9:56:15	Location	Ngari Capes	Site	CNB7	Status	Fished	Latitude	-33.55610037	Longitude	114.9994381	Visibility	
+CNB7-4	Belle Mullins	42		Date	17/02/2024	Time	9:49:37	Location	Ngari Capes	Site	CNB7	Status	Fished	Latitude	-33.55370123	Longitude	115.0014536	Visibility	
+CNB7-5	Belle Mullins	28		Date	17/02/2024	Time	8:16:58	Location	Ngari Capes	Site	CNB7	Status	Fished	Latitude	-33.55231843	Longitude	114.9987839	Visibility	
+EBG1-4		10		Date	16/02/2024	Time	14:05:14	Location	Ngari Capes	Site	EGB1	Status	Fished	Latitude	-33.54151265	Longitude	115.4446409	Visibility	
+EBG2-3		11		Date	16/02/2024	Time	14:11:57	Location	Ngari Capes	Site	EGB2	Status	Fished	Latitude	-33.55159487	Longitude	115.4299389	Visibility	
+EBG3-3		10		Date	16/02/2024	Time	14:17:27	Location	Ngari Capes	Site	EGB3	Status	No-take	Latitude	-33.56156818	Longitude	115.4222232	Visibility	
+EGB1-1	Nidhi Menon	10		Date	16/02/2024	Time	14:02:11	Location	Ngari Capes	Site	EGB1	Status	Fished	Latitude	-33.54532067	Longitude	115.44187	Visibility	
+EGB1-2	Nidhi Menon	10		Date	16/02/2024	Time	7:51:22	Location	Ngari Capes	Site	EGB1	Status	Fished	Latitude	-33.54291277	Longitude	115.442853	Visibility	
+EGB1-3	Nidhi Menon	10		Date	16/02/2024	Time	7:54:24	Location	Ngari Capes	Site	EGB1	Status	Fished	Latitude	-33.5402568	Longitude	115.4418686	Visibility	
+EGB1-4	Nidhi Menon	10		Date	16/02/2024	Time	07:57:53	Location	Ngari Capes	Site	EGB1	Status	Fished	Latitude	-33.54160948	Longitude	115.4447551	Visibility	
+EGB1-5	Nidhi Menon	10		Date	16/02/2024	Time	8:01:28	Location	Ngari Capes	Site	EGB1	Status	Fished	Latitude	-33.544133	Longitude	115.4385019	Visibility	
+EGB2-1	Nidhi Menon	10		Date	16/02/2024	Time	8:06:52	Location	Ngari Capes	Site	EGB2	Status	Fished	Latitude	-33.55358215	Longitude	115.4320331	Visibility	
+EGB2-2	Nidhi Menon	10		Date	16/02/2024	Time	8:09:46	Location	Ngari Capes	Site	EGB2	Status	Fished	Latitude	-33.55264123	Longitude	115.4356611	Visibility	
+EGB2-3	Nidh Menon	11		Date	16/02/2024	Time	08:13:19	Location	Ngari Capes	Site	EGB2	Status	Fished	Latitude	-33.55161108	Longitude	115.4298323	Visibility	
+EGB2-4	Nidhi Menon	10		Date	16/02/2024	Time	8:17:44	Location	Ngari Capes	Site	EGB2	Status	Fished	Latitude	-33.5499871	Longitude	115.4366481	Visibility	
+EGB2-5	Nidhi Menon	11		Date	16/02/2024	Time	8:20:38	Location	Ngari Capes	Site	EGB2	Status	Fished	Latitude	-33.54825213	Longitude	115.4334449	Visibility	
+EGB3-1	Nidhi Menon	10		Date	16/02/2024	Time	9:36:30	Location	Ngari Capes	Site	EGB3	Status	No-take	Latitude	-33.56581203	Longitude	115.4207646	Visibility	
+EGB3-2	Nidhi Menon	10		Date	16/02/2024	Time	9:39:29	Location	Ngari Capes	Site	EGB3	Status	No-take	Latitude	-33.56324325	Longitude	115.4204045	Visibility	
+EGB3-3	Nidhi Menon	10		Date	16/02/2024	Time	14:17:27	Location	Ngari Capes	Site	EGB3	Status	No-take	Latitude	-33.56156818	Longitude	115.4222232	Visibility	
+EGB3-4	Nidhi Menon	10		Date	16/02/2024	Time	14:20:01	Location	Ngari Capes	Site	EGB3	Status	No-take	Latitude	-33.56308675	Longitude	115.4258088	Visibility	
+EGB3-5	Nidhi Menon	9		Date	16/02/2024	Time	9:46:30	Location	Ngari Capes	Site	EGB3	Status	No-take	Latitude	-33.56512448	Longitude	115.425212	Visibility	
+EGB5-1		10		Date	16/02/2024	Time	9:53:03	Location	Ngari Capes	Site	EGB5	Status	No-take	Latitude	-33.57793092	Longitude	115.4119695	Visibility	
+EGB5-2		10		Date	16/02/2024	Time	9:55:34	Location	Ngari Capes	Site	EGB5	Status	No-take	Latitude	-33.57556252	Longitude	115.4119314	Visibility	
+EGB5-3	Nidhi Menon	10		Date	16/02/2024	Time	9:58:02	Location	Ngari Capes	Site	EGB5	Status	No-take	Latitude	-33.57811143	Longitude	115.4150233	Visibility	
+EGB5-4	Nidhi Menon	10		Date	16/02/2024	Time	10:01:07	Location	Ngari Capes	Site	EGB5	Status	No-take	Latitude	-33.577856	Longitude	115.409046	Visibility	
+EGB5-5	Nidhi Menon	9		Date	16/02/2024	Time	10:03:36	Location	Ngari Capes	Site	EGB5	Status	No-take	Latitude	-33.5802932	Longitude	115.4119596	Visibility	
+EGB6-1	Nidhi Menon	10		Date	16/02/2024	Time	11:34:29	Location	Ngari Capes	Site	EGB6	Status	Fished	Latitude	-33.59721683	Longitude	115.396083	Visibility	
+EGB6-2	Nidhi Menon	9		Date	16/02/2024	Time	11:36:52	Location	Ngari Capes	Site	EGB6	Status	Fished	Latitude	-33.60053695	Longitude	115.3964731	Visibility	
+EGB6-3	Nidhi Menon	9		Date	16/02/2024	Time	11:40:47	Location	Ngari Capes	Site	EGB6	Status	Fished	Latitude	-33.60189265	Longitude	115.3921409	Visibility	
+EGB6-4	Nidhi Menon	9		Date	16/02/2024	Time	11:43:54	Location	Ngari Capes	Site	EGB6	Status	Fished	Latitude	-33.59827425	Longitude	115.3892996	Visibility	
+EGB6-5	Nidhi Menon	10		Date	16/02/2024	Time	11:55:06	Location	Ngari Capes	Site	EGB6	Status	Fished	Latitude	-33.5947719	Longitude	115.3922396	Visibility	
+EGB7-1	Nidhi Menon	5		Date	16/02/2024	Time	12:02:12	Location	Ngari Capes	Site	EGB7	Status	Fished	Latitude	-33.60895527	Longitude	115.3747124	Visibility	
+EGB7-2	Nidhi Menon	9		Date	16/02/2024	Time	12:05:00	Location	Ngari Capes	Site	EGB7	Status	Fished	Latitude	-33.60517108	Longitude	115.3736669	Visibility	
+EGB7-3	Nidhi Menon	9		Date	16/02/2024	Time	12:13:15	Location	Ngari Capes	Site	EGB7	Status	Fished	Latitude	-33.60275858	Longitude	115.3755229	Visibility	
+EGB7-4		9		Date	16/02/2024	Time	12:16:10	Location	Ngari Capes	Site	EGB7	Status	Fished	Latitude	-33.60409267	Longitude	115.3796645	Visibility	
+EGB7-5	Nidhi Menon	9		Date	16/02/2024	Time	12:18:42	Location	Ngari Capes	Site	EGB7	Status	Fished	Latitude	-33.60739777	Longitude	115.3798611	Visibility	
+INB1-1	Nidhi Menon	26		Date	15/02/2024	Time	7:34:17	Location	Ngari Capes	Site	INB1	Status	Fished	Latitude	-33.66334587	Longitude	114.9891044	Visibility	
+INB1-2	Belle Mullins	23		Date	15/02/2024	Time	7:38:24	Location	Ngari Capes	Site	INB1	Status	Fished	Latitude	-33.6633535	Longitude	114.9931961	Visibility	
+INB1-3	Nidhi Menon	31		Date	15/02/2024	Time	7:44:01	Location	Ngari Capes	Site	INB1	Status	Fished	Latitude	-33.66432223	Longitude	114.9865579	Visibility	
+INB1-4	Nidhi Menon	17		Date	15/02/2024	Time	7:49:24	Location	Ngari Capes	Site	INB1	Status	Fished	Latitude	-33.66038885	Longitude	114.9935844	Visibility	
+INB1-5	Nidhi Menon	22		Date	15/02/2024	Time	7:53:15	Location	Ngari Capes	Site	INB1	Status	Fished	Latitude	-33.66479315	Longitude	114.9904892	Visibility	
+INB2-1	Nidhi Menon	28		Date	15/02/2024	Time	7:58:29	Location	Ngari Capes	Site	INB2	Status	Fished	Latitude	-33.66957188	Longitude	114.9817671	Visibility	
+INB2-2	Nidhi Menon	32		Date	15/02/2024	Time	8:02:24	Location	Ngari Capes	Site	INB2	Status	Fished	Latitude	-33.67133987	Longitude	114.9817064	Visibility	
+INB2-3	Nidhi Menon	24		Date	15/02/2024	Time	8:07:07	Location	Ngari Capes	Site	INB2	Status	Fished	Latitude	-33.67038782	Longitude	114.9844034	Visibility	
+INB2-4	Nidhi Menon	21		Date	15/02/2024	Time	8:10:59	Location	Ngari Capes	Site	INB2	Status	Fished	Latitude	-33.67260938	Longitude	114.9851433	Visibility	
+INB2-5	Nidhi Menon	22		Date	15/02/2024	Time	8:14:32	Location	Ngari Capes	Site	INB2	Status	Fished	Latitude	-33.66864693	Longitude	114.9857389	Visibility	
+INB3-1	Nidhi Menon	26		Date	15/02/2024	Time	9:32:14	Location	Ngari Capes	Site	INB3	Status	No-take	Latitude	-33.6830999	Longitude	114.9766521	Visibility	
+INB3-2	Nidhi Menon	28		Date	15/02/2024	Time	9:35:37	Location	Ngari Capes	Site	INB3	Status	No-take	Latitude	-33.6810749	Longitude	114.9779545	Visibility	
+INB3-3	Nidhi Menon	23		Date	15/02/2024	Time	9:39:07	Location	Ngari Capes	Site	INB3	Status	No-take	Latitude	-33.68069527	Longitude	114.9742801	Visibility	
+INB3-4	Nidhi Menon	32		Date	15/02/2024	Time	9:42:06	Location	Ngari Capes	Site	INB3	Status	No-take	Latitude	-33.6828573	Longitude	114.9734919	Visibility	
+INB3-5	Nidhi Menon	29		Date	15/02/2024	Time	9:45:34	Location	Ngari Capes	Site	INB3	Status	No-take	Latitude	-33.68386362	Longitude	114.9792132	Visibility	
+INB4-1	Nidhi Menon	24		Date	15/02/2024	Time	9:51:41	Location	Ngari Capes	Site	INB4	Status	No-take	Latitude	-33.69034772	Longitude	114.9763923	Visibility	
+INB4-2	Nidhi Menon	33		Date	15/02/2024	Time	9:55:13	Location	Ngari Capes	Site	INB4	Status	No-take	Latitude	-33.6888825	Longitude	114.9715957	Visibility	
+INB4-3	Nidhi Menon	20		Date	15/02/2024	Time	9:59:08	Location	Ngari Capes	Site	INB4	Status	No-take	Latitude	-33.69059945	Longitude	114.981131	Visibility	
+INB4-4	Nidhi Menon	30		Date	15/02/2024	Time	10:03:44	Location	Ngari Capes	Site	INB4	Status	No-take	Latitude	-33.69123563	Longitude	114.9705134	Visibility	
+INB4-5	Nidhi Menon	23		Date	15/02/2024	Time	10:06:57	Location	Ngari Capes	Site	INB4	Status	No-take	Latitude	-33.69262608	Longitude	114.9746377	Visibility	
+INB5-1	Nidhi Menon	32		Date	15/02/2024	Time	11:21:28	Location	Ngari Capes	Site	INB5	Status	No-take	Latitude	-33.69804967	Longitude	114.9642947	Visibility	
+INB5-2	Nidhi Menon	32		Date	15/02/2024	Time	11:24:46	Location	Ngari Capes	Site	INB5	Status	No-take	Latitude	-33.69978345	Longitude	114.9630359	Visibility	
+INB5-3	Nidhi Menon	30		Date	15/02/2024	Time	11:27:34	Location	Ngari Capes	Site	INB5	Status	No-take	Latitude	-33.69612962	Longitude	114.9647219	Visibility	
+INB5-4		28		Date	15/02/2024	Time	11:30:24	Location	Ngari Capes	Site	INB5	Status	No-take	Latitude	-33.70031718	Longitude	114.9666633	Visibility	
+INB5-5	Nidhi Menon	26		Date	15/02/2024	Time	11:33:34	Location	Ngari Capes	Site	INB5	Status	No-take	Latitude	-33.69763068	Longitude	114.9689095	Visibility	
+INB6-1	Belle Mullins	24		Date	15/02/2024	Time	11:39:40	Location	Ngari Capes	Site	INB6	Status	Fished	Latitude	-33.71085332	Longitude	114.9604437	Visibility	
+INB6-2	Nidhi Menon	29		Date	15/02/2024	Time	11:42:58	Location	Ngari Capes	Site	INB6	Status	Fished	Latitude	-33.7118036	Longitude	114.9576241	Visibility	
+INB6-3	Nidhi Menon	27		Date	15/02/2024	Time	11:46:32	Location	Ngari Capes	Site	INB6	Status	Fished	Latitude	-33.71303263	Longitude	114.9606832	Visibility	
+INB6-4	Nidhi Menon	27		Date	15/02/2024	Time	11:49:34	Location	Ngari Capes	Site	INB6	Status	Fished	Latitude	-33.70897227	Longitude	114.9588914	Visibility	
+INB6-5	Nidhi Menon	25		Date	15/02/2024	Time	11:52:41	Location	Ngari Capes	Site	INB6	Status	Fished	Latitude	-33.71173582	Longitude	114.9627434	Visibility	
+INB7-1	Nidhi Menon	31		Date	15/02/2024	Time	12:57:07	Location	Ngari Capes	Site	INB7	Status	Fished	Latitude	-33.72044987	Longitude	114.9672964	Visibility	
+INB7-2	Nidhi Menon	22		Date	15/02/2024	Time	13:01:25	Location	Ngari Capes	Site	INB7	Status	Fished	Latitude	-33.72330925	Longitude	114.973884	Visibility	
+INB7-3	Nidhi Menon	26		Date	15/02/2024	Time	13:04:29	Location	Ngari Capes	Site	INB7	Status	Fished	Latitude	-33.72056572	Longitude	114.9710789	Visibility	
+INB7-4	Nidhi Menon	27		Date	15/02/2024	Time	13:07:03	Location	Ngari Capes	Site	INB7	Status	Fished	Latitude	-33.72257443	Longitude	114.9706075	Visibility	
+INB7-5	Nidhi Menon	23		Date	15/02/2024	Time	13:10:03	Location	Ngari Capes	Site	INB7	Status	Fished	Latitude	-33.71833682	Longitude	114.9702059	Visibility	
