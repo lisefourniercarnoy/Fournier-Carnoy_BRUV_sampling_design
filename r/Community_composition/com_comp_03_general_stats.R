@@ -28,7 +28,9 @@ library(sf)
 colour_palette <- readLines("chapter_colours.txt"); colour_palette <- eval(parse(text = colour_palette))
 source("custom_theme.R")
 
-dat <- read.csv("data/tidy/2024_geographe_all_tidy_maxn.csv") %>%
+study_site <- "waatu"
+
+dat <- read.csv(paste0("data/tidy/2024_", study_site, "_all_tidy_maxn.csv")) %>%
   filter(!is.na(longitude) & !is.na(latitude)) %>%
   glimpse()
 

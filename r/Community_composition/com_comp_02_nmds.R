@@ -22,7 +22,6 @@ set.seed(12345)
 ## Load libraries -------------------------------------------------------------
 
 library(vegan) # for community composition
-library(ggplot2) # for plots
 library(tidyverse) # for data manipulation
 library(mvabund) # for community analysis
 library(sf) # for manipulating shapefiles
@@ -33,20 +32,27 @@ source("custom_theme.R")
 
 ## Load data and transform into OTU format ----------------------------------
 
-# Files used in this script
-file_analysis_box <- "QGIS layers/polys/com_comp_analysis_limits.shp"
-file_all_maxn     <- "data/tidy/2024_geographe_all_tidy_maxn.csv"
-file_habitat      <- "data/fullspp_habitat_table_ref.csv"
+study_site <- "waatern" # waatu or waatern
 
-# Box around East Geographe, we're only using this area to compare community.
+# Files used in this script
+file_analysis_box <- paste0("QGIS layers/clean/", study_site, "_community_composition_analysis_limits.shp")
+file_all_maxn     <- paste0("data/tidy/2024_", study_site, "_all_tidy_maxn.csv")
+
+# Box around the SZ, we're only using this area to compare community.
 crs <- st_crs(4326)
 box <- st_read(file_analysis_box) %>%
   st_make_valid() %>%
   st_transform(crs)
 plot(box)
 
-
 # MaxN data
+maxn <- read.csv(file_all_maxn) %>%
+  pivot_wider(
+    id_cols = c(opcode, latitude, longitude, depth, status, sd),
+    names_from = fullspp,
+    values_from = MaxN,
+    values_fill = 0
+    ) 
 
 maxn <- read.csv(file_all_maxn) %>%
   pivot_wider(id_cols = c(opcode, latitude, longitude, depth, status, sd),
@@ -57,11 +63,8 @@ maxn <- st_as_sf(maxn, coords = c("longitude", "latitude"), crs = 4326); plot(ma
 
 # Select only points within community composition box
 com_comp <- st_intersection(maxn, box); plot(com_comp)
-saveRDS(com_comp, 'data/rmd/community_composition_analysis_maxn.rds') # for rmarkdown
+saveRDS(com_comp, paste0("data/rmd/C02_", study_site, "_community_composition_analysis_maxn.rds")) # for rmarkdown
 
-# Species-habitat lookup table
-hab <- read.csv(file_habitat) %>% 
-  glimpse()
 
 ## PCoA -----------------------------------------------------------------------
 
@@ -86,7 +89,6 @@ environmental_data <- as.data.frame(com_comp) %>%
 
 # Load necessary packages
 library(vegan)
-library(ggplot2)
 library(ggrepel)
 
 # Perform Bray-Curtis distance
@@ -128,7 +130,7 @@ head(major_species)
 
 library(ggrepel)
 
-saveRDS(pcoa_scores, file = "data/rmd/pcoa_scores.rds") # for rmarkdown
+saveRDS(pcoa_scores, file = paste0("data/rmd/", study_site, "_pcoa_scores.rds")) # for rmarkdown
 
 ggplot(pcoa_scores, aes(x = V1, y = V2)) +
   geom_point(aes( colour = sd, shape = status), size = 3) +
@@ -182,7 +184,7 @@ plot(data_abund ~ sd, col = as.numeric(status))
 geo <- manyglm(community ~ sd * status,
                data = data_list, family = "negative.binomial"
                )
-?manyglm
+
 # Check assumptions
 
 # -- Mean variance (random cloud of points around zero, no pattern) and log lin-
@@ -199,60 +201,6 @@ qqnorm(residuals(geo)[,3], main = 'design:status'); qqline(residuals(geo)[,3], c
 
 # Check outputs
 result <- anova.manyglm(geo, p.uni = 'adjusted') # takes like 20 min
-capture.output(result, file = "outputs/Community_comparison/community_composition_analysis_manyglm_result.txt")
+capture.output(result, file = paste0("outputs/Community_comparison/C02_", study_site, "_community_composition_analysis_manyglm_result.txt"))
 
-### TRY####
-
-species_hab <- hab %>%
-  dplyr::select(fullspp, reef, seagrass, sand, pelagic)
-
-# Step 2: Align species names in community matrix to those in habitat lookup
-colnames(community_data) <- gsub("\n", ".", colnames(community_data))  # if needed
-
-# Filter to shared species
-shared_species <- intersect(colnames(community_data), species_hab$fullspp)
-
-community_filtered <- community_data[, shared_species]
-habitat_filtered <- species_hab %>% filter(fullspp %in% shared_species)
-
-# Step 3: Convert abundance to presence/absence
-community_pa <- (community_filtered > 0) * 1  # presence = 1, absence = 0
-
-# Convert to matrix for multiplication
-comm_mat <- as.matrix(community_pa)
-
-# Build habitat matrix (species × habitat), aligned
-hab_mat <- as.matrix(habitat_filtered[match(colnames(comm_mat), habitat_filtered$fullspp),
-                                      c("reef", "seagrass", "sand", "pelagic")])
-
-# Matrix multiplication → site × habitat matrix (species richness per habitat)
-site_habitat <- as.data.frame(comm_mat %*% hab_mat)
-
-# PCoA (if not already run)
-dist_matrix <- vegdist(community_data, method = "bray")
-pcoa_result <- cmdscale(dist_matrix, k = 2, eig = TRUE)
-pcoa_scores <- as.data.frame(pcoa_result$points)
-colnames(pcoa_scores) <- c("PCoA1", "PCoA2")
-
-# Correlate habitat richness with PCoA axes
-habitat_pcoa_correlation <- cor(site_habitat, pcoa_scores, method = "pearson")
-
-# Prepare for plotting
-habitat_vectors <- as.data.frame(habitat_pcoa_correlation)
-habitat_vectors$habitat <- rownames(habitat_vectors)
-
-# Plot with presence-based habitat vectors
-library(ggplot2)
-library(ggrepel)
-
-ggplot(pcoa_scores, aes(x = PCoA1, y = PCoA2)) +
-  geom_point(aes(colour = com_comp$sd, shape = com_comp$status), size = 3) +
-  geom_segment(data = habitat_vectors,
-               aes(x = 0, y = 0, xend = PCoA1, yend = PCoA2, color = habitat),
-               arrow = arrow(length = unit(0.3, "cm")), size = 1.2) +
-  geom_text_repel(data = habitat_vectors,
-                  aes(x = PCoA1, y = PCoA2, label = habitat),
-                  size = 4, fontface = "bold") +
-  theme_minimal() +
-  ggtitle("PCoA with Habitat Association Vectors (Presence-Based)")
-
+### END ###
