@@ -18,73 +18,78 @@ library(sf)
 library(terra)
 library(raster)
 library(CheckEM)
+library(stars) # for detrended bathymetry
+library(starsExtra) # for detrended bathymetry
 
 # Clear memory
 rm(list=ls())
 
+study_site <- "waatu" # waatu or waatern
 
-ext <- c(115.035, 115.68012207, -33.69743897, -33.35) # Extent to crop layers to
+ext <- if(study_site == "waatern") {
+  ext <- c(115.035, 115.68012207, -33.69743897, -33.35) 
+} else { 
+  ext <- c(114.7, 115, -34.25, -33.95)
+} # Extent to crop layers to
+
 
 ## Files used in this script --------------------------------------------------
 
-file_fish_length        <- "data/tidy/2024-04_Geographe_stereo-BRUVs_complete-length.rds" # obtained from 00_checkem
-file_metadata           <- "data/raw/2024_commonwealth/2024-04_Geographe_stereo-BRUVs_Metadata.rds" # obtained from MEGlab labsheets
+file_metadata <- if (study_site == "waatern") {
+  "data/raw/2024_waatern_commonwealth/2024-04_Geographe_stereo-BRUVs_Metadata.rds"
+} else {
+  "data/raw/2024_waatu_commonwealth/2024-10_SwC_stereo-BRUVs_Metadata.csv"
+}
 
-file_obs_hab            <- "data/raw/2024_commonwealth/2024-04_Geographe_stereo-BRUVs_forwards_Dot Point Measurements.txt" # output form TransectMeasure
+file_maxn <- ifelse(study_site == "waatern", 
+                    "data/tidy/2024_waatern_all_tidy_maxn.csv",
+                    "data/tidy/2024_waatu_all_tidy_maxn.csv")
 
-file_250m_bathy         <- "data/spatial/rasters/GB-SW_250mBathy.tif" # from Geoscience Australia
-file_250m_bathy_deriv   <- "data/spatial/rasters/2014_geographe_bathymetry-derivatives.RDS" # From Claude's code
-file_lidar_bathy        <- "data/spatial/rasters/LiDAR_geo_compressed.tif" # Too big for git
+file_obs_hab            <- ifelse(study_site == "waatern", 
+                                  "data/raw/2024_waatern_commonwealth/2024-04_Geographe_stereo-BRUVs_forwards_Dot Point Measurements.txt",
+                                  "data/raw/2024_waatu_state/benthos_summarise.RDS")
+
+file_250m_bathy         <- "QGIS layers/clean/wadandi_250m_bathy.tif" # from Geoscience Australia
 
 
 ## Presence/Absence data ------------------------------------------------------
 
-L50 <- c('Chrysophrys auratus' = 0, #566, # L50 from Wakefield et al. 2015 - males 585, females 566
-         #'Pseudocaranx spp' = 279, # L50 from male P. dentex, Farmer et al. 2005
-         'Glaucosoma hebraicum' = 0, #301, # L50 from Hesp 2002 - males 320, females 301 - but using all fish because papers find NTZ makes dhuies more abundant not bigger
-         #'Choerodon rubescens' = 264, # L50 from females, Nardi 2006
-         #'Nemadactylus valenciennesi' = 400,# L50 from females, Coulson et al. 2010
-         #"Epinephelides armatus" = 285, # L50 from females west coast, Buckland 2022
-         "Ophthalmolepis lineolatus" = 0 #184 # l50 from females, Morton 2008
-         ) 
-
-metadata <- readRDS(file_metadata) %>% 
-  rename(opcode = sample) %>% 
-  dplyr::filter(successful_count == "Yes" & successful_length == "Yes") %>% 
-  dplyr::select("opcode", "latitude_dd", "longitude_dd", "status", "depth_m") %>% 
+metadata <- if (study_site == "waatern") {
+  metadata <- readRDS(file_metadata)
+} else {
+  metadata <- read.csv(file_metadata) %>% dplyr::filter(!is.na(ip))
+} 
+metadata <- metadata %>% # reading the right format depending on the study site
+  rename(#opcode = sample,
+         depth = depth_m,
+         ) %>% 
+  dplyr::filter(str_detect(opcode, "BV")) %>%  # take only the spatially balanced drops. this is for the distribution model
+  dplyr::filter(successful_count == "Yes") %>% 
+  dplyr::select("opcode", "latitude_dd", "longitude_dd", "status", "depth") %>% 
   glimpse()
 
-length_data <- readRDS(file_fish_length) %>%
-  rename(opcode = sample) %>% 
-  mutate(full_spp = paste(genus, species)) %>% 
-  glimpse()
+dat <- read.csv(file_maxn) %>% 
+  dplyr::filter(fullspp %in% c('Sparidae Chrysophrys auratus', 
+                               'Labridae Ophthalmolepis lineolatus', 
+                               'Glaucosomatidae Glaucosoma hebraicum'),
+                opcode %in% metadata$opcode) %>% 
 
-dat <- length_data %>% 
-  # Select species present in L50
-  filter(full_spp %in% names(L50)) %>% 
-  
   # Join the metadata with the length data
   left_join(metadata %>% distinct(opcode, longitude_dd, latitude_dd), by = "opcode") %>% 
   
-  # Separate into size categories, treating missing lengths as immature
-  group_by(longitude_dd, latitude_dd, full_spp, opcode) %>% 
-  summarise(
-    count_mature = sum(coalesce(length_mm, 0) > L50[full_spp], na.rm = TRUE),
-    count_immature = sum(coalesce(length_mm, 0) <= L50[full_spp], na.rm = TRUE),
-    .groups = "drop"
-  ) %>% 
-  
-  # Ensure that all full_spp are present even if no data is available for the species
-  complete(opcode, full_spp, fill = list(count_mature = 0, count_immature = 0)) %>% 
-  complete(opcode = unique(metadata$opcode), full_spp = full_spp, fill = list(count_mature = 0, count_immature = 0)) %>% 
+  # Ensure that all fullspp are present even if no data is available for the species
+  complete(opcode = unique(metadata$opcode), fullspp = fullspp, fill = list(MaxN = 0)) %>% 
   
   # Fill in missing longitude and latitude
-  left_join(metadata %>% distinct(opcode, longitude_dd, latitude_dd), by = "opcode") %>% 
+  left_join(metadata %>% distinct(opcode, longitude_dd, latitude_dd, depth, status), by = "opcode") %>%
   mutate(
     longitude = coalesce(longitude_dd.x, longitude_dd.y),
-    latitude = coalesce(latitude_dd.x, latitude_dd.y)
+    latitude = coalesce(latitude_dd.x, latitude_dd.y),
+    depth   = coalesce(depth.x, as.numeric(depth.y)),  # convert to numeric if needed
+    status  = coalesce(status.x, status.y),
   ) %>%
-  dplyr::select(-longitude_dd.x, -latitude_dd.x, -longitude_dd.y, -latitude_dd.y) %>% 
+  dplyr::select(-longitude_dd.x, -latitude_dd.x, -longitude_dd.y, -latitude_dd.y, 
+                -depth.x, -depth.y, -status.x, -status.y, -sd, -X) %>% 
   
   # Create an ID column
   mutate(ID = row_number()) %>% 
@@ -92,13 +97,11 @@ dat <- length_data %>%
 
 length(unique(dat$opcode)) == length(unique(metadata$opcode)) # should be true. if not there are opcodes missing.
 
-ggplot(dat, aes(x = longitude, y = latitude, size = count_mature)) +
-  facet_wrap(~full_spp) +
+ggplot(dat, aes(x = longitude, y = latitude, size = MaxN)) +
+  facet_wrap(~fullspp) +
   geom_point()
 
-saveRDS(dat, "data/tidy/mature_presence_latlong_all_lengths.rds") # Needed for 03_gam
-
-summary(as.factor(dat$full_spp[dat$count_mature>0]))
+saveRDS(dat, paste0("data/tidy/L01_", study_site, "_presence_latlong.rds")) # Needed for 03_gam
 
 
 ## Environmental data ---------------------------------------------------------
@@ -106,12 +109,13 @@ summary(as.factor(dat$full_spp[dat$count_mature>0]))
 ### Observed habitat formatting -----------------------------------------------
 
 # workflow from C. Spencer, https://globalarchivemanual.github.io/CheckEM/articles/r-workflows/check-habitat.html
-metadata <- read_metadata(here::here("data/raw/2024_commonwealth/")) %>%
+metadata <- read_metadata(here::here(paste0("data/raw/2024_", study_site, "_commonwealth/"))) %>%
   dplyr::select(campaignid, sample, longitude_dd, latitude_dd, date_time, location, site, depth_m, successful_count, successful_length, successful_habitat_forwards, successful_habitat_backwards) %>%
   glimpse()
 
-points <- read_TM(here::here("data/raw/2024_commonwealth/"),
-                  sample = "opcode")
+points <- read_TM(here::here(paste0("data/raw/2024_", study_site, "_commonwealth/")),
+                  sample = "opcode"
+                  )
 
 habitat <- points %>%
   dplyr::filter(relief_annotated %in% "No") %>%
@@ -155,7 +159,6 @@ metadata.missing.habitat <- anti_join(metadata, habitat, by = c("sample")) %>%
   glimpse() # here there's one drop that doesn't have habitat, normal because the files are overall missing. it's the only one in Geographe. Normal. All chill.
 
 
-
 tidy.habitat <- habitat %>%
   dplyr::mutate(number = 1) %>%                                     
   left_join(catami) %>%
@@ -170,41 +173,29 @@ tidy.habitat <- habitat %>%
   glimpse()
 
 # Save for 02_habitat_raster
-saveRDS(tidy.habitat, file = here::here(paste0("data/tidy/2024_geographe_tidy_habitat.rds")))
+saveRDS(tidy.habitat, file = here::here(paste0("data/tidy/L01_", study_site, "_tidy_habitat.rds")))
 
 
 ### Bathymetry ----------------------------------------------------------------
 
 # 250m bathymetry
-bathy_250m <- rast(file_250m_bathy) %>%
-  raster::crop(as(extent(ext), 'SpatialPolygons')); plot(bathy_250m)
+bathy_250 <- rast(file_250m_bathy) %>%
+  raster::crop(as(extent(ext), 'SpatialPolygons')); plot(bathy_250)
 
 # 250m Bathymetry derivatives
-bathy_250m_d <- readRDS(file_250m_bathy_deriv) %>%
-  raster::crop(ext); plot(bathy_250m_d)
+aspect_250 <- terra::terrain(bathy_250, "aspect", unit = "degrees", neighbors = 8); plot(aspect_250)
+roughness_250 <- terrain(bathy_250, "roughness", neighbors = 8); plot(roughness_250)
 
-depth_250       <- bathy_250m_d[[1]]; plot(depth_250)#;      writeRaster(bathy_250m_d[[1]], "data/spatial/rasters/geographe_250m_depth.tif", overwrite = T)
-aspect_250      <- bathy_250m_d[[2]]; plot(aspect_250)#;     writeRaster(bathy_250m_d[[2]], "data/spatial/rasters/geographe_250m_aspect.tif", overwrite = T)
-roughness_250   <- bathy_250m_d[[3]]; plot(roughness_250)#;  writeRaster(bathy_250m_d[[3]], "data/spatial/rasters/geographe_250m_roughness.tif", overwrite = T)
-detrended_250   <- bathy_250m_d[[4]]; plot(detrended_250)#;  writeRaster(bathy_250m_d[[4]], "data/spatial/rasters/geographe_250m_detrended_bathy.tif", overwrite = T)
-
-# LiDAR bathymetry
-bathy_lidar <- rast(file_lidar_bathy); bathy_lidar <- terra::project(bathy_lidar, crs("+proj=longlat +datum=WGS84 +no_defs"))
-bathy_lidar <- crop(bathy_lidar, ext); plot(bathy_lidar)
-
-# LiDAR bathymetry derivatives (can't make detrended bathy so skipping that)
-bathy_lidar_d <- raster::terrain(bathy_lidar[[1]], neighbors = 8,
-                                 v = c("aspect", "roughness"),
-                                 unit = "degrees"); plot(bathy_lidar_d)
-
-aspect_lidar      <- bathy_lidar_d[[1]]; plot(aspect_lidar)
-roughness_lidar   <- bathy_lidar_d[[2]]; plot(roughness_lidar)
+zstar <- st_as_stars(bathy_250)
+detrended_250 <- detrend(zstar, parallel = 8) %>%
+  rast()
+names(detrended_250) <- c("detrended", "lineartrend")
+detrended_250 <- detrended_250[["detrended"]]; plot(detrended_250)
 
 
 ## Making a file stack for all bathymetry data --------------------------------
 
-predictors <- list(bathy_lidar = bathy_lidar[[1]], roughness_lidar = roughness_lidar, aspect_lidar = aspect_lidar,
-                   aspect_250 = aspect_250, depth_250 = depth_250, roughness_250 = roughness_250, detrended_250 = detrended_250)
+predictors <- list(aspect_250 = aspect_250, depth_250 = bathy_250, roughness_250 = roughness_250, detrended_250 = detrended_250)
 
 for (i in 1:length(predictors)) { # Unifying extents and resampling so that they can be stacked
   reference_raster <- predictors[[1]] # Use the raster with the highest resolution as a reference. Otherwise the re-sampling will apply lower resolutions to everything.
@@ -214,15 +205,12 @@ for (i in 1:length(predictors)) { # Unifying extents and resampling so that they
 
 list2env(predictors, envir = .GlobalEnv) # Put the elements of the list in the environment
 
-predictors <- c(
-  bathy_lidar, roughness_lidar, aspect_lidar,          # LiDAR data
-  depth_250, aspect_250, roughness_250, detrended_250) # 250m data
+predictors <- c(depth_250, aspect_250, roughness_250, detrended_250) # 250m data
 
-names(predictors) <- c("bathy_lidar", "roughness_lidar", "aspect_lidar", # Add clear names
-                       "bathy_250m", "aspect_250m", "roughness_250m", "detrended_250m")
+names(predictors) <- c("bathy_250m", "aspect_250m", "roughness_250m", "detrended_250m")
 plot(predictors)
 
-saveRDS(predictors, file = "data/spatial/rasters/geographe_bathy_predictors.rds") # This takes a while
+saveRDS(predictors, file = paste0("data/tidy/L01_", study_site, "_bathy_predictors.rds"))
 
 
 ### END ###
