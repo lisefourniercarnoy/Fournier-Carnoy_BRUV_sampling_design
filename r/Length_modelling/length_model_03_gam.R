@@ -26,11 +26,12 @@ library(stargazer) # for model outputs as table
 # Clear memory
 rm(list=ls())
 
+study_site <- "waatern" # waatern or waatu
 
 ## Files used in this script --------------------------------------------------
 
-file_mature_pres      <- "data/tidy/mature_presence_latlong_all_lengths.rds"
-file_all_predictors   <- "data/spatial/rasters/geographe_all_predictors.rds" # must be a terra SpatRaster
+file_mature_pres      <- paste0("data/tidy/L01_", study_site, "_presence_latlong.rds")
+file_all_predictors   <- paste0("data/tidy/L02_", study_site, "_all_predictors.rds") # must be a terra SpatRaster
 
 
 ## Load data ------------------------------------------------------------------
@@ -43,12 +44,10 @@ pres <- readRDS(file_mature_pres) %>%
          latitude = as.numeric(latitude)) %>%
   glimpse()
 
-predictors <- readRDS(file_all_predictors); plot(predictors)
-
-names(predictors) <- c("bathy_lidar",  "roughness_lidar", "aspect_lidar",
-                      "aspect_250m",   "bathy_250m",      "roughness_250m", "detrended_250m", 
-                      "reef_lidar",    "sand_lidar",      "seagrass_lidar",
-                      "reef_250m",     "sand_250m",       "seagrass_250m")
+predictors <- readRDS(file_all_predictors)
+names(predictors) <- c("bathy", "aspect", "roughness", "detrended",
+                       "reef", "sand", "seagrass"); plot(predictors)
+pred.vars <- names(predictors); pred.vars <- pred.vars[pred.vars != "aspect"] # remove aspect, because it has no biological relevance for fish
 
 raster_df <- as.data.frame(predictors, xy = TRUE, na.rm = TRUE) %>%
   glimpse()
@@ -57,83 +56,39 @@ dat <- terra::extract(predictors, pres[, c("longitude", "latitude")], cells = TR
 
 dat <- as.data.frame(dat) %>% 
   mutate(ID = row_number()) %>% 
-  #na.omit() %>% # This removes drops beyond the LiDAR extent, but because LiDAR predictors were tested and not included in the final model, I'm using all datapoints, even those beyond LiDAR
   glimpse()
 
 dat <- pres %>% # to get the abundance data again
   left_join(dat, by = "ID") %>%
-  #na.omit() %>% # This removes drops beyond the LiDAR extent
   glimpse()
 
 head(dat)
-saveRDS(dat, paste0('data/rmd/gam_model_data.rds')) # for rmarkdown
+saveRDS(dat, paste0("data/rmd/L03_", study_site, "gam_model_data.rds")) # for rmarkdown
 
 
 ### Explore data quickly ----
 
-ggplot(dat, aes(x=-latitude, y = -longitude)) +
-  geom_point(aes(size=count_mature), col = 'navy') + # all species
+ggplot(dat, aes(x = longitude, y = latitude)) +
+  geom_point(aes(size = MaxN), col = 'navy') + # all species
   scale_size_continuous(range = c(1, 7.5)) +
-  facet_wrap(~full_spp)
+  facet_wrap(~fullspp)
 
 
 ## Model selection and prediction ---------------------------------------------
 
-summary(as.factor(dat$full_spp[dat$count_mature>0]))
+summary(as.factor(dat$fullspp[dat$MaxN>0]))
 
 # Select the species you want to model
-model_spp <- c(
-  "Chrysophrys auratus"
-  #"Ophthalmolepis lineolatus"
-  #"Glaucosoma hebraicum"
-               ); spp <- gsub(" ", "_", model_spp, fixed = TRUE)
+model_spp <- unique(dat$fullspp); model_spp <- model_spp[3]; spp <- gsub(" ", "_", model_spp, fixed = TRUE); spp
 
-
-dat_extent <- "full_data" # select whether you're modelling the whole extent or just the "lidar_extent"
-#dat_extent <- "lidar_extent"
-
-
-# Select the variables you want to test (depending on whether you're looking at full extent or lidar extent)
-if (dat_extent == "full_data") {
-  pred.vars <- c("bathy_250m", #"aspect_250m", 
-                 "roughness_250m", "detrended_250m", 
-                 "reef_250m", "sand_250m", "seagrass_250m")
-} else {
-  pred.vars <- c("bathy_250m", #"aspect_250m", 
-                 "roughness_250m", "detrended_250m", 
-                 "reef_250m", "sand_250m", "seagrass_250m",
-                 "bathy_lidar", "roughness_lidar", #"aspect_lidar",
-                 "reef_lidar", "sand_lidar", "seagrass_lidar")
-}
 
 # Modify the dataframe to your species
-dat_filtered <- dat[dat$full_spp %in% model_spp,] %>%
-  group_by(latitude, longitude, ID,
-           !!!syms(pred.vars) # select environmental variables listed above
-  ) %>%
-  summarise(
-    count_mature = sum(count_mature, na.rm = TRUE),
-    count_immature = sum(count_immature, na.rm = TRUE),
-    .groups = 'drop'
-  ) %>%
-  ungroup() %>%
-  na.omit() %>% # This removes any incomplete data, including drops beyond the LiDAR extent if you're doing lidar_extent
+dat_filtered <- dat[dat$fullspp %in% model_spp,] %>%
+  na.omit() %>% # This removes any incomplete data
   glimpse()
 
-# Little check to make sure you're modelling what you said you would
-expected_rows <- if (dat_extent == "full_data") 245 else 130
-actual_rows <- nrow(dat_filtered)
-
-if (actual_rows == expected_rows) {
-  print(paste("Check passed:", actual_rows, "rows match", dat_extent))
-} else {
-  print(paste("Mismatch! Expected", expected_rows, "but got", actual_rows, "for", dat_extent))
-}
-
-
-
 ggplot(dat_filtered, aes(x = longitude, y = latitude)) +
-  geom_point(aes(size = count_mature), col = 'navy')
+  geom_point(aes(size = MaxN), col = 'navy')
 
 outdir <- ("outputs/Length_comparison/mature/")
 
@@ -143,9 +98,9 @@ use.dat <- as.data.frame(use.dat)
 
 ### Testing which model family is best ----------------------------------------
 
-Model1 <- gam(count_mature ~
-                s(seagrass_250m, bs = 'cr'),
-              family = poisson(link="log"),  data = use.dat)
+Model1 <- gam(MaxN ~
+                s(seagrass, bs = 'cr'),
+              family = poisson(link = "log"),  data = use.dat)
 
 # Step 1: Generate candidate models using `generate.model.set`
 model.set <- generate.model.set(
@@ -214,17 +169,15 @@ for (fam_name in names(families)) {
 # Print the final model comparison table
 print(model_comparison)
 
-# Choosing the family of the model, there
+# Choosing the family of the model
 #fam <- poisson(link = "log")
 #fam <- nb(link = "log")
 fam <- tw(link = "log")
 
-# Glaucosoma hebraicum        uses        tweedie
-# Chrysophrys auratus         uses        negative binomial, but we'll use tweedie
-# Ophthalmolepis lineolatus   uses        tweedie
+# We'll use Tweedie for all species because of convergence issues with NB models
 
 # Create a reference model to test all other models to.
-Model1 <- gam(count_mature ~ s(seagrass_250m, bs = 'cr', k = 5), 
+Model1 <- gam(MaxN ~ s(seagrass, bs = 'cr', k = 5), 
               family = fam, 
               data = use.dat, 
               method = 'REML')
@@ -247,13 +200,16 @@ names(out.list)
 
 # From all the combinations of predictors, we'll now look at how they compare to each other
 out.list$failed.models # look for failed models
+out.list$success.models # look for successful models
+
 mod.table           <- out.list$mod.data.out
 mod.table           <- mod.table[order(mod.table$AICc), ] # AICc value, the lower, the better the performance of the model
+
 mod.table$cumsum.wi <- cumsum(mod.table$wi.AICc) # wi.AICc is the model weight, which compares the proportion of evidence for each model. The higher the better.
 out.i               <- mod.table[which(mod.table$delta.AICc <= 2), ] # This compares the models that have comparable AICc values (here, within 2 AICc values)
 out.i
 best.model.name     <- as.character(out.i$modname)[1]; print(best.model.name)
-saveRDS(best.model.name, file = sub("_\\.rds$", ".rds", paste("data/rmd/gam_best_model", dat_extent, paste(gsub(" ", "_", spp), collapse = "_"), ".rds", sep = "_")))
+#saveRDS(best.model.name, file = sub("_\\.rds$", ".rds", paste("data/rmd/gam_best_model", dat_extent, paste(gsub(" ", "_", spp), collapse = "_"), ".rds", sep = "_")))
 
 # We'll plot to see the spread of data in the model. Does it make biological sense? etc. very few observations where you expect few etc.
 png(paste0("outputs//Length_comparison/gam_diagnostic_plots/gam_fit_plot_", spp, ".png"), width = 900, height = 900)  # or use jpeg() or pdf()
@@ -270,7 +226,7 @@ gam.check(best.model)
 title(main = paste("Model Diagnostics", spp), line = -6, cex.main = 2)
 dev.off()
 
-# Using the best models above, fitting a GAM to mature fish
+# Using the best models above, fitting a GAM to fish
 best.model.vars <- strsplit(best.model.name, "\\+")[[1]]; best.model.vars
 
 # Format variables correctly for the gam to interpret
@@ -291,22 +247,22 @@ best_vars <- make_vars(best.model.vars)
 # Use a function to automatically fit the model, filtered to the model_spp data, and to the optimal variables
 make_optimal_model <- function(vars, family) {
   # Create the model formula as a string
-  formula_str <- paste("count_mature ~", vars)
+  formula_str <- paste("MaxN ~", vars)
   
   # Fit the model using the formula string
   model <- gam(as.formula(formula_str),
                data = use.dat, method = "REML", family = family)
   return(model)
 }
-m_mature <- make_optimal_model(best_vars, fam)
+m_fish <- make_optimal_model(best_vars, fam)
 
-summary(m_mature)
-plot(m_mature, pages = 1, residuals = T, cex = 5)
+summary(m_fish)
+plot(m_fish, pages = 1, residuals = T, cex = 5)
 
 
 ### Remove variable values that are out of range ------------------------------
 
-sel_rast <- predictors[[names(m_mature$model[2:length(names(m_mature$model))])]]; plot(sel_rast) # Subset the environmental raster to only the variables in the model
+sel_rast <- predictors[[names(m_fish$model[2:length(names(m_fish$model))])]]; plot(sel_rast) # Subset the environmental raster to only the variables in the model
 
 # Cropping the abundance prediction to observed env. variables only
 extracted_values <- terra::extract(sel_rast, dat[, c("longitude", "latitude")]) %>%
@@ -352,22 +308,22 @@ ras_crop <- as.data.frame(masked_raster, xy = TRUE, na.rm = TRUE) %>% glimpse()
 
 ### Predicting mature distribution --------------------------------------------
 
-predicted_abundance <- cbind(ras_crop, "p_mature" = mgcv::predict.gam(m_mature, ras_crop, type = "response", se.fit = T)) %>%
+predicted_abundance <- cbind(ras_crop, "p_fish" = mgcv::predict.gam(m_fish, ras_crop, type = "response", se.fit = T)) %>%
   glimpse()
 
-p_mature <- rast(predicted_abundance)
+p_fish <- rast(predicted_abundance)
 
 par(mfrow=c(1,1))
-plot(p_mature$p_mature.fit, pch = 19,
+plot(p_fish$p_fish.fit, pch = 19,
      main = paste(model_spp, out.i$modname[1]),
      xlab = "Longitude", ylab = "Latitude",
-     xlim = c(115.32, 115.5426), ylim = c(-33.60944, -33.40019), range = c(0,5))
+     xlim = c(115.32, 115.5426), ylim = c(-33.60944, -33.40019))
 
 
 ### MEGAPLOT ------------------------------------------------------------------
 
 # prepare for  saving the plot
-png(paste0("outputs/Length_comparison/prediction_plots/prediction_plot_", paste(gsub(" ", "_", spp), dat_extent, sep = "_"), ".png"),
+png(paste0("outputs/Length_comparison/L03_distribution_prediction_plots/L03_", study_site, "_distribution_prediction_plot_", paste(gsub(" ", "_", spp)), ".png"),
     width = 1200, height = 1200, res = 150)  # Open PNG device
 
 # Set up the layout for a 3x3 grid
@@ -377,7 +333,7 @@ layout(matrix(c(1, 1, 3, 1, 1, 4, 2, 2, 5), nrow = 3, ncol = 3, byrow = TRUE))
 par(mar = c(10, 3, 3, 3))  # Minimal margins for individual plots
 par(oma = c(1, 1, 1, 1))  # Minimal outer margins for overall layout
 # Plot 1: p_mature$p_mature.fit (scatter plot) - Plot occupies positions 1, 1, and 1
-plot(p_mature$p_mature.fit, pch = 25,
+plot(p_fish$p_fish.fit, pch = 25,
      main = paste(gsub(" ", "_", spp), collapse = "_"),
      xlab = "Longitude", ylab = "Latitude",
      xlim = c(115.32, 115.5426), ylim = c(-33.60944, -33.40019))
@@ -385,7 +341,7 @@ plot(p_mature$p_mature.fit, pch = 25,
 # Plot 2: Model summary (m_mature) - Plot occupies positions 2, 2
 par(mar = c(0, 0, 0, 0))  # Remove margins
 plot.new()  # Create a blank space for text
-summary_info <- capture.output(summary(m_mature))  # Capture the summary output
+summary_info <- capture.output(summary(m_fish))  # Capture the summary output
 text(0.1, 0.8, paste(summary_info, collapse = "\n"), cex = 1, adj = 0, family = "mono")
 
 # Plot 3: final covariates
@@ -399,9 +355,9 @@ dev.off() # save for future reference
 
 ### Save predictions as rasters -----------------------------------------------
 
-writeRaster(c(p_mature$p_mature.fit, p_mature$p_mature.se.fit), 
-            filename = paste("outputs/Length_comparison/predicted_abundance_rasters/mature_predicted_abundance_all_lengths", paste(spp, collapse = "_"), dat_extent,
-                             ".tif", sep = "_"), 
+writeRaster(c(p_fish$p_fish.fit, p_fish$p_fish.se.fit), 
+            filename = paste0("outputs/Length_comparison/predicted_abundance_distribution_rasters/L03_", study_site, "_predicted_distribution_raster_", paste(spp, collapse = "_"),
+                             ".tif"), 
             overwrite = TRUE)
 
 
