@@ -356,7 +356,7 @@ dev.off() # save for future reference
 ### Save predictions as rasters -----------------------------------------------
 
 writeRaster(c(p_fish$p_fish.fit, p_fish$p_fish.se.fit), 
-            filename = paste0("outputs/Length_comparison/predicted_abundance_distribution_rasters/L03_", study_site, "_predicted_distribution_raster_", paste(spp, collapse = "_"),
+            filename = paste0("outputs/Length_comparison/L03_predicted_abundance_distribution_rasters/L03_", study_site, "_predicted_distribution_raster_", paste(spp, collapse = "_"),
                              ".tif"), 
             overwrite = TRUE)
 
