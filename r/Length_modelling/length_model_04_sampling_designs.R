@@ -24,11 +24,13 @@ library(ggspatial) # for scalebars on plots
 library(nngeo)
 library(cubelyr)
 library(units) # for cluster design, making sure cluster points aren't too close.
-library(spatstat.geom) # for random design with min distance
-library(spatstat.random) # for random design with min distance
 
 # Clear memory
 rm(list=ls())
+
+study_site <- "waatu"
+
+min_dis <- 250 # minimum distance between points for all sampling designs
 
 set.seed(12345)
 
@@ -36,19 +38,21 @@ set.seed(12345)
 
 # Files used in this script
 
-file_bathy_deriv        <- "data/spatial/rasters/2024_geographe_bathymetry-derivatives.rds"
+file_bathy_deriv        <- paste0("data/tidy/L01_", study_site, "_bathy_predictors.rds")
 
-file_land               <- "data/spatial/shapefiles/wadandi_land.shp"
-file_sim_SZ             <- "data/spatial/shapefiles/simulated_SZ.shp"
-file_pref_samp_area     <- "QGIS layers/polys/simulated_SZ_preferential_sampling_area.shp"
-
-file_abund_crop         <- "outputs/Length_comparison/predicted_abundance_rasters/mature_predicted_abundance.tif"
+file_land               <- "QGIS layers/clean/wadandi_land_highres.shp"
+file_sim_SZ             <- paste0("QGIS layers/clean/", study_site, "_simulated_SZ.shp")
+file_pref_samp_area     <- paste0("QGIS layers/clean/", study_site, "_simulated_SZ_sampling_area.shp")
 
 
 # Load bathymetry and SZs
 
 # Extent to crop layers
-ext <- c(115.035, 115.68012207, -33.69743897, -33.20243897)
+ext <- if(study_site == "waatern") {
+  ext <- c(115.035, 115.68012207, -33.69743897, -33.35) 
+} else { 
+  ext <- c(114.7, 115, -34.25, -33.95)
+} # Extent to crop layers to
 crs <- 7850 # projected in m
 
 preds <- readRDS(file_bathy_deriv) %>%
@@ -72,7 +76,7 @@ samp_area <- st_read(file_pref_samp_area) %>% # Sampling area
   st_difference(st_union(aus)) %>%
   st_make_valid()
 
-depth_mask <- preds$gadepth < -7 # Select the depth to cut out
+depth_mask <- preds$bathy_250m < -7 # Select the depth to cut out
 plot(depth_mask)
 depth_polygons <- as.polygons(depth_mask, na.rm = TRUE) # Convert to polygon
 depth_sf <- st_as_sf(depth_polygons) %>% # Convert again for intersection
@@ -82,35 +86,89 @@ depth_sf <- st_as_sf(depth_polygons) %>% # Convert again for intersection
 samp_area <- st_intersection(samp_area, depth_sf) %>% # Select only deeper-than-5m
   slice(2); plot(samp_area)
 
-saveRDS(samp_area, "data/spatial/shapefiles/L04_sampling_area_deeper_than_7m.rds")
+saveRDS(samp_area, paste0("QGIS layers/produced_from_code/L04_", study_site, "_sampling_area_deeper_than_7m.rds"))
+
 
 ## SIMPLE SPATIAL BALANCED ----------------------------------------------------
 
 ### Run the sampling design ---------------------------------------------------
-samp_area$temp <- 'temp' # temporary column
-samp_temp <- tibble(temp = 50) # for GRTS to know how many samples to put
+samp_area$zone_strata <- 'all' # temporary column
+base_samps <- tibble("all" = 50) # for GRTS to know how many samples to put
 
 sample.design <- grts(st_transform(samp_area, 7850),
-                      n_base = samp_temp,
+                      n_base = base_samps,
                       n_over = 10,
-                      stratum_var = "temp",
-                      DesignID = "LFC-GEO",
-                      mindis = 500,
+                      stratum_var = "zone_strata",
+                      DesignID = "LFC-",
+                      mindis = min_dis,
                       maxtry = 20)
+
 sample.design <- st_sf(sample.design$sites_base)
 sample.design$in_SZ <- as.logical(st_within(sample.design$geometry, SZ, sparse = FALSE)[,1])
 
-tempdat <- st_nn(sample.design$sites_base, sample.design$sites_base, # Measure the distance between points and their nearest neighbour
-                 returnDist = T, progress = F, k = 5, maxdist = 500) %>% # measure only the ones closer than 500m
+tempdat <- st_nn(sample.design$geometry, sample.design$geometry, # Measure the distance between points and their nearest neighbour
+                 returnDist = T, progress = F, k = 5, maxdist = min_dis) %>% # measure only the ones closer than 500m
   glimpse()
 
-samples_sf_simsb <- sample.design$sites_base %>%
+samples <- sample.design %>%
   dplyr::mutate(nn = sapply(tempdat[[1]], "[", 1),
-                dists = sapply(tempdat[[2]], "[", 1)) %>%
+                dists = sapply(tempdat[[2]], "[", 2)) %>%
   # If everything works well (and the grts mindis call above is set to 500), there should be only zeroes in dists.
   # If not, remove the ones that have dist between 0-500m (0 excluded)
   glimpse()
-summary(samples_sf_simsb$dists) # all zero. perfect.
+summary(samples$dists) # all zero. perfect.
+
+
+# remove points too close to each other (if any)
+samples <- samples %>% mutate(row_id = row_number())
+nn_list <- tempdat$nn
+dist_list <- tempdat$dist
+remove_points <- c()
+
+# Check if there are any neighbors beyond self (length > 1 in any nn_list element)
+has_neighbors <- any(sapply(nn_list, function(x) length(x) > 1))
+
+if(has_neighbors) {
+  for(i in seq_along(nn_list)) {
+    neighbours <- nn_list[[i]]
+    distances <- dist_list[[i]]
+    
+    if(length(neighbours) < 2) next # skip if no neighbors except self
+    
+    close_neighbours <- neighbours[distances > 0 & distances < min_dis]
+    
+    for(nbr in close_neighbours) {
+      pair <- sort(c(i, nbr))
+      remove_points <- c(remove_points, pair[1])
+    }
+  }
+  
+  remove_points <- unique(remove_points)
+  
+  if(length(remove_points) > 0) {
+    samples_cleaned <- samples[-remove_points, ]
+  } else {
+    samples_cleaned <- samples
+  }
+  
+} else {
+  # No neighbors beyond self, so no removal
+  samples_cleaned <- samples
+} # this identifies one point from the pair of points within min_dis of each other to remove
+
+if(length(remove_points) > 0) {
+  samples_cleaned <- samples[-remove_points, ] # Remove points
+  
+  # Report
+  cat("Removed points:", length(remove_points), "\n")
+  cat("Remaining points:", nrow(samples_cleaned), "\n")
+} else { 
+  # No points to remove, keep original data
+  samples_cleaned <- samples
+  
+  cat("No points removed.\n")
+  cat("Total points:", nrow(samples_cleaned), "\n")
+} # this removes the points identified above, if there are any.
 
 
 ### Plot example design -------------------------------------------------------
@@ -127,57 +185,94 @@ ggplot() +
   new_scale_fill() +
   geom_sf(data = aus) +
   geom_sf(data = SZ, colour = "#7f6000", fill = NA, linewidth = 1) +
-  geom_sf(data = samples_sf_simsb, aes(colour = "Simulated sample points")) +
+  geom_sf(data = samples_cleaned, aes(colour = "Simulated sample points")) +
   coord_sf(crs = crs, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
   scale_color_manual(name = '', values = c('Simulated sample points' = 'red')) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-saveRDS(samples_sf_simsb, 'data/rmd/L04_example_sampling_design_simple_spatial_balance.rds') # for use in Rmarkdown
+saveRDS(samples_cleaned, paste0('data/rmd/L04_', study_site, '_example_sampling_design_simple_spatial_balance.rds')) # for use in Rmarkdown
 
 
 ### Loop for 1000 designs -----------------------------------------------------
 
 num_designs <- 1000 # Number of SB sampling designs to create
 sampling_designs <- vector("list", num_designs)
-
-for(i in 1:num_designs) {
-  # Create a sampling design
-  sampling_design <- grts(st_transform(samp_area, 7850),
-                        n_base = samp_temp,
-                        n_over = 10,
-                        stratum_var = "temp",
-                        DesignID = "LFC-GEO",
-                        mindis = 500,
-                        maxtry = 20)
-  sampling_design <- st_sf(sampling_design$sites_base)
-  sampling_design$in_SZ <- as.logical(st_within(sampling_design$geometry, SZ, sparse = FALSE)[,1])
+for (i in 1:num_designs) {
+  cat("Generating simple spatially balanced design", i, "\n")
   
-  sampling_designs[[i]] <- sampling_design
+  # Step 1: Generate GRTS design
+  raw_design <- grts(
+    st_transform(samp_area, 7850),
+    n_base = base_samps,
+    n_over = 10,
+    stratum_var = "zone_strata",
+    DesignID = paste0("LFC-", i),
+    mindis = min_dis,
+    maxtry = 20
+  )
+  
+  # Step 2: Extract sites_base and convert to sf
+  samples <- st_sf(raw_design$sites_base)
+  
+  # Step 3: Nearest neighbor check
+  tempdat <- st_nn(
+    samples,
+    samples,
+    returnDist = TRUE,
+    progress = FALSE,
+    k = 5,
+    maxdist = min_dis
+  )
+  
+  samples <- samples %>% mutate(row_id = row_number())
+  nn_list <- tempdat$nn
+  dist_list <- tempdat$dist
+  
+  remove_points <- c()
+  has_neighbors <- any(sapply(nn_list, function(x) length(x) > 1))
+  
+  if (has_neighbors) {
+    for (j in seq_along(nn_list)) {
+      neighbors <- nn_list[[j]]
+      distances <- dist_list[[j]]
+      
+      if (length(neighbors) < 2) next
+      
+      close_neighbors <- neighbors[distances > 0 & distances < min_dis]
+      for (nbr in close_neighbors) {
+        pair <- sort(c(j, nbr))
+        remove_points <- c(remove_points, pair[1])
+      }
+    }
+    remove_points <- unique(remove_points)
+    if (length(remove_points) > 0) {
+      samples <- samples[-remove_points, ]
+    }
+  }
+  
+  # Step 4: Add spatial indicator
+  samples$in_SZ <- as.logical(st_within(samples$geometry, SZ, sparse = FALSE)[, 1])
+  
+  # Step 5: Store final design
+  sampling_designs[[i]] <- samples
 }
-head(sampling_designs[[1]])
+plot(sampling_designs[[1]]$geometry)
+
 
 # Save the list of sampling designs
-saveRDS(sampling_designs, file = "outputs/Length_comparison/sampling_designs/L04_simple_spatially_balanced_designs.rds")
+saveRDS(sampling_designs, file = paste0("outputs/Length_comparison/sampling_designs/L04_", study_area, "simple_spatially_balanced_designs.rds"))
 
 
 
 ## Make strata ----------------------------------------------------------------
 
 # Using detrended bathymetry - same as 2024 SB design
-hist(preds$detrended)
-detrended_qs <- c(0, 0.5, 0.8, 1)
-detrended_cuts <- global(preds$detrended, probs = detrended_qs, fun = quantile, na.rm = T)
-cat_detrended <- classify(preds$detrended, rcl = as.numeric(detrended_cuts[1,]))
+hist(preds$detrended_250m)
+detrended_qs <- c(0, 0.5, 0.9, 1)
+detrended_cuts <- global(preds$detrended_250m, probs = detrended_qs, fun = quantile, na.rm = T)
+cat_detrended <- classify(preds$detrended_250m, rcl = as.numeric(detrended_cuts[1,]))
 par(mfrow = c(1, 1)); plot(cat_detrended)
-
-# Look at roughness just for shits n gigs
-hist(preds$roughness)
-roughness_qs <- c(0, 0.5, 0.8, 1)
-roughness_cuts <- global(preds$roughness, probs = roughness_qs, fun = quantile, na.rm = T)
-cat_roughness <- classify(preds$roughness, rcl = as.numeric(roughness_cuts[1,]))
-par(mfrow = c(1, 1)); plot(cat_roughness)
-
 
 sf_detrended <- as.factor(cat_detrended) %>% # Detrended bathymetry strata
   as.polygons() %>% 
@@ -201,9 +296,10 @@ inp_stars <- st_as_stars(sf_all); plot(inp_stars) # Convert into a 'stars' objec
 
 sf_all <- st_intersection(sf_all, samp_area) %>% # Crop to the preferential sampling area
   st_make_valid() %>%
-  st_collection_extract("POLYGON"); plot(sf_all)
+  st_collection_extract("POLYGON") %>% 
+  rename(detrended = detrended_250m); plot(sf_all)
 
-saveRDS(sf_all, 'data/rmd/L04_samp_area_detrended.rds')
+saveRDS(sf_all, paste0("data/rmd/L04_", study_site, "_sample_area_detrended_strata.rds"))
 
 inp_stars <- st_as_stars(sf_all); plot(inp_stars)
 
@@ -246,12 +342,6 @@ inp_sf <- st_as_sf(inp_stars) %>%
       zone_strata == "out_strata_3" ~ 30
     )
   ) %>%
-  # group_by(zone_strata) %>%
-  # summarise(
-  #   geometry = st_union(geometry),
-  #   nsamps = first(nsamps),  # Retrieve nsamps for each zone_strata
-  #   .groups = 'drop'
-  # ) %>%
   dplyr::mutate(area = st_area(.),
                 mindis = 500) %>%
   st_transform(crs = crs) %>%
@@ -259,17 +349,12 @@ inp_sf <- st_as_sf(inp_stars) %>%
 unique(inp_sf)
 plot(inp_sf) # Check that number of samples in each group is all good
 
-saveRDS(inp_sf, "data/spatial/shapefiles/L04_sampling_design_zone_strata_all.rds") # Save to use in other scripts
+saveRDS(inp_sf, "outputs/L04_sampling_design_strata_sample_numbers.rds") # Save to use in other scripts
 
 
 ## SPATIALLY BALANCED SAMPLING DESIGN, 25-25 ----------------------------------
 
 # GRTS needs the number of samples in this horrible wide format for some reason
-base_samps <- data.frame(nsamps = inp_sf$nsamps_sb_25_25,
-                         zone_strata = inp_sf$zone_strata) %>%
-  pivot_wider(names_from = zone_strata,
-              values_from = nsamps) %>%
-  glimpse()
 base_samps <- tibble(
   "SZ_strata_1" = 10,
   "SZ_strata_2" = 10,
@@ -279,14 +364,15 @@ base_samps <- tibble(
   "out_strata_3" = 5
 )
 
+
 ### Run the sampling design ---------------------------------------------------
 
 sample.design <- grts(inp_sf,
                       n_base = base_samps,
                       n_over = 10,
                       stratum_var = "zone_strata",
-                      DesignID = "LFC-GEO",
-                      mindis = 500,
+                      DesignID = "LFC-",
+                      mindis = min_dis,
                       maxtry = 20)
 
 plot(sample.design)
@@ -295,18 +381,67 @@ plot(sample.design)
 ### Filter out points that are too close to each other ------------------------
 
 tempdat <- st_nn(sample.design$sites_base, sample.design$sites_base, # Measure the distance between points and their nearest neighbour
-                 returnDist = T, progress = F, k = 5, maxdist = 500) %>% # measure only the ones closer than 500m
+                 returnDist = T, progress = F, k = 5, maxdist = min_dis) %>% # measure only the ones closer than min_dis
   glimpse()
 
-
-samples_sf_sb <- sample.design$sites_base %>%
+samples <- sample.design$sites_base %>%
   dplyr::mutate(nn = sapply(tempdat[[1]], "[", 1),
-                dists = sapply(tempdat[[2]], "[", 1)) %>%
-  # If everything works well (and the grts mindis call above is set to 500), there should be only zeroes in dists.
-  # If not, remove the ones that have dist between 0-500m (0 excluded)
+                dists = sapply(tempdat[[2]], "[", 2)) %>%
+  # If everything works well (and the grts mindis call above is set above), there should be only zeroes in dists.
+  # If not, remove the ones that have dist within the mindis (0 excluded)
   glimpse()
-summary(samples_sf_sb$dists) # all zero. perfect.
+summary(samples$dists) # there may be some pairs of points too close, which we will remove below.
 
+# remove points too close to each other
+samples <- samples %>% mutate(row_id = row_number())
+nn_list <- tempdat$nn
+dist_list <- tempdat$dist
+remove_points <- c()
+
+# Check if there are any neighbors beyond self (length > 1 in any nn_list element)
+has_neighbors <- any(sapply(nn_list, function(x) length(x) > 1))
+
+if(has_neighbors) {
+  for(i in seq_along(nn_list)) {
+    neighbours <- nn_list[[i]]
+    distances <- dist_list[[i]]
+    
+    if(length(neighbours) < 2) next # skip if no neighbors except self
+    
+    close_neighbours <- neighbours[distances > 0 & distances < min_dis]
+    
+    for(nbr in close_neighbours) {
+      pair <- sort(c(i, nbr))
+      remove_points <- c(remove_points, pair[1])
+    }
+  }
+  
+  remove_points <- unique(remove_points)
+  
+  if(length(remove_points) > 0) {
+    samples_cleaned <- samples[-remove_points, ]
+  } else {
+    samples_cleaned <- samples
+  }
+  
+} else {
+  # No neighbors beyond self, so no removal
+  samples_cleaned <- samples
+} # this identifies one point from the pair of points within min_dis of each other to remove
+
+if(length(remove_points) > 0) {
+  samples_cleaned <- samples[-remove_points, ] # Remove points
+  
+  # Report
+  cat("Removed points:", length(remove_points), "\n")
+  cat("Remaining points:", nrow(samples_cleaned), "\n")
+} else { 
+  # No points to remove, keep original data
+  samples_cleaned <- samples
+  
+  cat("No points removed.\n")
+  cat("Total points:", nrow(samples_cleaned), "\n")
+} # this removes the points identified above, if there are any.
 
 ### Plot the sampling design --------------------------------------------------
 
@@ -322,42 +457,84 @@ ggplot() +
   new_scale_fill() +
   geom_sf(data = aus) +
   geom_sf(data = SZ, colour = "#7f6000", fill = NA, linewidth = 1) +
-  geom_sf(data = samples_sf_sb, aes(colour = "Simulated sample points")) +
+  geom_sf(data = samples_cleaned, aes(colour = "Simulated sample points")) +
   coord_sf(crs = crs, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
   scale_color_manual(name = '', values = c('Simulated sample points' = 'red')) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-saveRDS(samples_sf_sb, 'data/rmd/L04_example_sampling_design_stratified_spatial_balance_25_25.rds') # for use in Rmarkdown
+saveRDS(samples_cleaned, paste0('data/rmd/L04_', study_site, '_example_sampling_design_stratified_spatial_balance_25_25.rds')) # for use in Rmarkdown
 
 
 ### Loop for 1000 designs -----------------------------------------------------
 
-num_designs <- 1000 # Number of SB sampling designs to create
+num_designs <- 1000
 sampling_designs <- vector("list", num_designs)
 
 for (i in 1:num_designs) {
-  print(i)
-  # Create a sampling design
+  cat("Generating stratified spatially balanced (25/25) design", i, "\n")
+  
+  # Generate sampling design
   sampling_design <- grts(inp_sf,
                           n_base = base_samps,
                           n_over = 10,
                           stratum_var = "zone_strata",
-                          DesignID = paste("LFC-GEO", i, sep = "-"),
-                          mindis = 100,
+                          DesignID = paste("LFC-", i, sep = "-"),
+                          mindis = min_dis,
                           maxtry = 20)
-
-  # Add strata and zone_strata information to sampled points
+  
+  # Add zone_strata info by spatial join
   sampled_points <- sampling_design$sites_base %>%
-    dplyr::mutate(
-      zone_strata = st_join(., inp_sf)$zone_strata,
-    )
-
-  sampling_designs[[i]] <- sampled_points
+    dplyr::mutate(zone_strata = st_join(., inp_sf)$zone_strata) %>%
+    dplyr::mutate(row_id = row_number())  # Add row ID for filtering
+  
+  # Calculate nearest neighbors and distances within min_dis
+  tempdat <- st_nn(sampled_points, sampled_points, 
+                   returnDist = TRUE, 
+                   progress = FALSE, 
+                   k = 5, 
+                   maxdist = min_dis)
+  
+  nn_list <- tempdat$nn
+  dist_list <- tempdat$dist
+  
+  remove_points <- integer()  # Initialize empty vector
+  
+  # Find points to remove (first point in each close pair)
+  for(j in seq_along(nn_list)) {
+    neighbours <- nn_list[[j]]
+    distances <- dist_list[[j]]
+    
+    if(length(neighbours) < 2) next
+    
+    close_neighbours <- neighbours[distances > 0 & distances < min_dis]
+    
+    for(nbr in close_neighbours) {
+      pair <- sort(c(j, nbr))
+      remove_points <- c(remove_points, pair[1])
+    }
+  }
+  
+  remove_points <- unique(remove_points)
+  
+  # Remove those points from sampled_points
+  if(length(remove_points) > 0) {
+    samples_cleaned <- sampled_points[-remove_points, ]
+    cat("  → Removed", length(remove_points), "points. Remaining:", nrow(samples_cleaned), "\n")
+  } else {
+    samples_cleaned <- sampled_points
+    cat("  → No points removed. All", nrow(samples_cleaned), "retained.\n")
+  }
+  
+  # Store the cleaned sample in the list
+  sampling_designs[[i]] <- samples_cleaned
 }
+summary(sapply(sampling_designs, nrow)) # maximum 3 removed points, should be alright
 head(sampling_designs[[1]])
+
+
 # Save the list of sampling designs
-saveRDS(sampling_designs, file = "outputs/Length_comparison/sampling_designs/L04_stratified_spatial_balanced_designs_25_25.rds")
+saveRDS(sampling_designs, file = paste0("outputs/Length_comparison/sampling_designs/L04_", study_site, "_stratified_spatial_balanced_designs_25_25.rds"))
 
 ## SPATIALLY BALANCED SAMPLING DESIGN, 20-30 ----------------------------------
 
@@ -376,8 +553,8 @@ sample.design <- grts(inp_sf,
                       n_base = base_samps,
                       n_over = 10,
                       stratum_var = "zone_strata",
-                      DesignID = "LFC-GEO",
-                      mindis = 500,
+                      DesignID = "LFC-",
+                      mindis = min_dis,
                       maxtry = 20)
 
 plot(sample.design)
@@ -386,17 +563,67 @@ plot(sample.design)
 ### Filter out points that are too close to each other ------------------------
 
 tempdat <- st_nn(sample.design$sites_base, sample.design$sites_base, # Measure the distance between points and their nearest neighbour
-                 returnDist = T, progress = F, k = 5, maxdist = 500) %>% # measure only the ones closer than 500m
+                 returnDist = T, progress = F, k = 5, maxdist = min_dis) %>% # measure only the ones closer than min_dis
   glimpse()
 
-
-samples_sf_sb <- sample.design$sites_base %>%
+samples <- sample.design$sites_base %>%
   dplyr::mutate(nn = sapply(tempdat[[1]], "[", 1),
                 dists = sapply(tempdat[[2]], "[", 2)) %>%
-  # If everything works well (and the grts mindis call above is set to 500), there should be only zeroes in dists.
-  # If not, remove the ones that have dist between 0-500m (0 excluded)
+  # If everything works well (and the grts mindis call above is set above), there should be only zeroes in dists.
+  # If not, remove the ones that have dist within the mindis (0 excluded)
   glimpse()
-summary(samples_sf_sb$dists) # all zero. perfect.
+summary(samples$dists) # there may be some pairs of points too close, which we will remove below.
+
+# remove points too close to each other
+samples <- samples %>% mutate(row_id = row_number())
+nn_list <- tempdat$nn
+dist_list <- tempdat$dist
+remove_points <- c()
+
+# Check if there are any neighbors beyond self (length > 1 in any nn_list element)
+has_neighbors <- any(sapply(nn_list, function(x) length(x) > 1))
+
+if(has_neighbors) {
+  for(i in seq_along(nn_list)) {
+    neighbours <- nn_list[[i]]
+    distances <- dist_list[[i]]
+    
+    if(length(neighbours) < 2) next # skip if no neighbors except self
+    
+    close_neighbours <- neighbours[distances > 0 & distances < min_dis]
+    
+    for(nbr in close_neighbours) {
+      pair <- sort(c(i, nbr))
+      remove_points <- c(remove_points, pair[1])
+    }
+  }
+  
+  remove_points <- unique(remove_points)
+  
+  if(length(remove_points) > 0) {
+    samples_cleaned <- samples[-remove_points, ]
+  } else {
+    samples_cleaned <- samples
+  }
+  
+} else {
+  # No neighbors beyond self, so no removal
+  samples_cleaned <- samples
+} # this identifies one point from the pair of points within min_dis of each other to remove
+
+if(length(remove_points) > 0) {
+  samples_cleaned <- samples[-remove_points, ] # Remove points
+  
+  # Report
+  cat("Removed points:", length(remove_points), "\n")
+  cat("Remaining points:", nrow(samples_cleaned), "\n")
+} else { 
+  # No points to remove, keep original data
+  samples_cleaned <- samples
+  
+  cat("No points removed.\n")
+  cat("Total points:", nrow(samples_cleaned), "\n")
+} # this removes the points identified above, if there are any.
 
 
 ### Plot the sampling design --------------------------------------------------
@@ -413,42 +640,83 @@ ggplot() +
   new_scale_fill() +
   geom_sf(data = aus) +
   geom_sf(data = SZ, colour = "#7f6000", fill = NA, linewidth = 1) +
-  geom_sf(data = samples_sf_sb, aes(colour = "Simulated sample points")) +
+  geom_sf(data = samples_cleaned, aes(colour = "Simulated sample points")) +
   coord_sf(crs = crs, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
   scale_color_manual(name = '', values = c('Simulated sample points' = 'red')) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-saveRDS(samples_sf_sb, 'data/rmd/L04_example_sampling_design_stratified_spatial_balance_20_30.rds') # for use in Rmarkdown
+saveRDS(samples, paste0('data/rmd/L04_', study_site, '_example_sampling_design_stratified_spatial_balance_20_30.rds')) # for use in Rmarkdown
 
 
 ### Loop for 1000 designs -----------------------------------------------------
 
-num_designs <- 1000 # Number of SB sampling designs to create
+num_designs <- 1000
 sampling_designs <- vector("list", num_designs)
 
 for (i in 1:num_designs) {
-  print(i)
-  # Create a sampling design
+  cat("Generating stratified spatially balanced (20/30) design", i, "\n")
+  
+  # Generate sampling design
   sampling_design <- grts(inp_sf,
                           n_base = base_samps,
                           n_over = 10,
                           stratum_var = "zone_strata",
-                          DesignID = paste("LFC-GEO", i, sep = "-"),
-                          mindis = 100,
+                          DesignID = paste("LFC-", i, sep = "-"),
+                          mindis = min_dis,
                           maxtry = 20)
   
-  # Add strata and zone_strata information to sampled points
+  # Add zone_strata info by spatial join
   sampled_points <- sampling_design$sites_base %>%
-    dplyr::mutate(
-      zone_strata = st_join(., inp_sf)$zone_strata,
-    )
+    dplyr::mutate(zone_strata = st_join(., inp_sf)$zone_strata) %>%
+    dplyr::mutate(row_id = row_number())  # Add row ID for filtering
   
-  sampling_designs[[i]] <- sampled_points
+  # Calculate nearest neighbors and distances within min_dis
+  tempdat <- st_nn(sampled_points, sampled_points, 
+                   returnDist = TRUE, 
+                   progress = FALSE, 
+                   k = 5, 
+                   maxdist = min_dis)
+  
+  nn_list <- tempdat$nn
+  dist_list <- tempdat$dist
+  
+  remove_points <- integer()  # Initialize empty vector
+  
+  # Find points to remove (first point in each close pair)
+  for(j in seq_along(nn_list)) {
+    neighbours <- nn_list[[j]]
+    distances <- dist_list[[j]]
+    
+    if(length(neighbours) < 2) next
+    
+    close_neighbours <- neighbours[distances > 0 & distances < min_dis]
+    
+    for(nbr in close_neighbours) {
+      pair <- sort(c(j, nbr))
+      remove_points <- c(remove_points, pair[1])
+    }
+  }
+  
+  remove_points <- unique(remove_points)
+  
+  # Remove those points from sampled_points
+  if(length(remove_points) > 0) {
+    samples_cleaned <- sampled_points[-remove_points, ]
+    cat("  → Removed", length(remove_points), "points. Remaining:", nrow(samples_cleaned), "\n")
+  } else {
+    samples_cleaned <- sampled_points
+    cat("  → No points removed. All", nrow(samples_cleaned), "retained.\n")
+  }
+  
+  # Store the cleaned sample in the list
+  sampling_designs[[i]] <- samples_cleaned
 }
+summary(sapply(sampling_designs, nrow)) # maximum 3 removed points, should be alright
 head(sampling_designs[[1]])
+
 # Save the list of sampling designs
-saveRDS(sampling_designs, file = "outputs/Length_comparison/sampling_designs/L04_stratified_spatial_balanced_designs_20_30.rds.rds")
+saveRDS(sampling_designs, file = paste0("outputs/Length_comparison/sampling_designs/L04_", study_site, "_stratified_spatial_balanced_designs_20_30.rds.rds"))
 
 
 ## PREFERENTIAL SAMPLING DESIGN 25-25 -----------------------------------------
@@ -466,7 +734,7 @@ sample.design <- grts(inp_sf,
                       n_over = 10,
                       stratum_var = "zone_strata",
                       DesignID = "LFC-GEO",
-                      mindis = 10,
+                      mindis = min_dis,
                       maxtry = 20)
 
 plot(sample.design)
@@ -474,24 +742,72 @@ plot(sample.design)
 
 ### Filter out points that are too close to each other ------------------------
 
+
 tempdat <- st_nn(sample.design$sites_base, sample.design$sites_base, # Measure the distance between points and their nearest neighbour
-                 returnDist = T, progress = F, k = 5, maxdist = 500) %>% # measure only the ones closer than 500m
+                 returnDist = T, progress = F, k = 5, maxdist = min_dis) %>% # measure only the ones closer than min_dis
   glimpse()
 
-
-samples_sf_pref <- sample.design$sites_base %>%
+samples <- sample.design$sites_base %>%
   dplyr::mutate(nn = sapply(tempdat[[1]], "[", 1),
-                dists = sapply(tempdat[[2]], "[", 1)) %>%
-  # If everything works well (and the grts mindis call above is set to 500), there should be only zeroes in dists.
-  # If not, remove the ones that have dist between 0-500m (0 excluded)
+                dists = sapply(tempdat[[2]], "[", 2)) %>%
+  # If everything works well (and the grts mindis call above is set above), there should be only zeroes in dists.
+  # If not, remove the ones that have dist within the mindis (0 excluded)
   glimpse()
+summary(samples$dists) # there may be some pairs of points too close, which we will remove below.
+
+# remove points too close to each other
+samples <- samples %>% mutate(row_id = row_number())
+nn_list <- tempdat$nn
+dist_list <- tempdat$dist
+remove_points <- c()
+
+# Check if there are any neighbors beyond self (length > 1 in any nn_list element)
+has_neighbors <- any(sapply(nn_list, function(x) length(x) > 1))
+
+if(has_neighbors) {
+  for(i in seq_along(nn_list)) {
+    neighbours <- nn_list[[i]]
+    distances <- dist_list[[i]]
+    
+    if(length(neighbours) < 2) next # skip if no neighbors except self
+    
+    close_neighbours <- neighbours[distances > 0 & distances < min_dis]
+    
+    for(nbr in close_neighbours) {
+      pair <- sort(c(i, nbr))
+      remove_points <- c(remove_points, pair[1])
+    }
+  }
+  
+  remove_points <- unique(remove_points)
+  
+  if(length(remove_points) > 0) {
+    samples_cleaned <- samples[-remove_points, ]
+  } else {
+    samples_cleaned <- samples
+  }
+  
+} else {
+  # No neighbors beyond self, so no removal
+  samples_cleaned <- samples
+} # this identifies one point from the pair of points within min_dis of each other to remove
+
+if(length(remove_points) > 0) {
+  samples_cleaned <- samples[-remove_points, ] # Remove points
+  
+  # Report
+  cat("Removed points:", length(remove_points), "\n")
+  cat("Remaining points:", nrow(samples_cleaned), "\n")
+} else { 
+  # No points to remove, keep original data
+  samples_cleaned <- samples
+  
+  cat("No points removed.\n")
+  cat("Total points:", nrow(samples_cleaned), "\n")
+} # this removes the points identified above, if there are any.
 
 
 ### Plot the sampling design --------------------------------------------------
-
-tempdat <- st_nn(samples_sf_pref, samples_sf_pref,
-                 returnDist = T, progress = F, k = 5, maxdist = 500)
-
 
 ggplot() +
   geom_sf(data = sf_all, aes(fill = as.factor(detrended)), colour = NA) +
@@ -505,59 +821,84 @@ ggplot() +
   new_scale_fill() +
   geom_sf(data = aus) +
   geom_sf(data = SZ, colour = "#7f6000", fill = NA, linewidth = 1) +
-  geom_sf(data = samples_sf_pref, aes(colour = "Simulated sample points")) +
+  geom_sf(data = samples, aes(colour = "Simulated sample points")) +
   coord_sf(crs = crs, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
   scale_color_manual(name = '', values = c('Simulated sample points' = 'red')) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-saveRDS(samples_sf_pref, 'data/rmd/L04_example_sampling_design_preferential_25_25.rds') # for use in Rmarkdown
+saveRDS(samples_sf_pref, paste0('data/rmd/L04_', study_site, '_example_sampling_design_preferential_25_25.rds')) # for use in Rmarkdown
 
 
 
 ### Loop for 1000 designs ------------------------------------------------------
 
-num_designs <- 1000 # Number of preferential sampling designs to create
-sampling_designs <- vector("list", num_designs) # Create an empty list in which to store designs
+num_designs <- 1000
+sampling_designs <- vector("list", num_designs)
 
-for (i in 1:num_designs) { # Create SB sampling designs
-  print(i)
-  # Create a sampling design
+for (i in 1:num_designs) {
+  cat("Generating preferential (25/25) design", i, "\n")
+  
+  # Generate sampling design
   sampling_design <- grts(inp_sf,
                           n_base = base_samps,
                           n_over = 10,
                           stratum_var = "zone_strata",
-                          DesignID = paste("LFC-GEO", i, sep = "-"),
-                          mindis = 100,
+                          DesignID = paste("LFC-", i, sep = "-"),
+                          mindis = min_dis,
                           maxtry = 20)
   
-  # Add strata and zone_strata information to sampled points
+  # Add zone_strata info by spatial join
   sampled_points <- sampling_design$sites_base %>%
-    dplyr::mutate(
-      zone_strata = st_join(., inp_sf)$zone_strata,
-    )
+    dplyr::mutate(zone_strata = st_join(., inp_sf)$zone_strata) %>%
+    dplyr::mutate(row_id = row_number())  # Add row ID for filtering
   
-  sampling_designs[[i]] <- sampled_points
+  # Calculate nearest neighbors and distances within min_dis
+  tempdat <- st_nn(sampled_points, sampled_points, 
+                   returnDist = TRUE, 
+                   progress = FALSE, 
+                   k = 5, 
+                   maxdist = min_dis)
+  
+  nn_list <- tempdat$nn
+  dist_list <- tempdat$dist
+  
+  remove_points <- integer()  # Initialize empty vector
+  
+  # Find points to remove (first point in each close pair)
+  for(j in seq_along(nn_list)) {
+    neighbours <- nn_list[[j]]
+    distances <- dist_list[[j]]
+    
+    if(length(neighbours) < 2) next
+    
+    close_neighbours <- neighbours[distances > 0 & distances < min_dis]
+    
+    for(nbr in close_neighbours) {
+      pair <- sort(c(j, nbr))
+      remove_points <- c(remove_points, pair[1])
+    }
+  }
+  
+  remove_points <- unique(remove_points)
+  
+  # Remove those points from sampled_points
+  if(length(remove_points) > 0) {
+    samples_cleaned <- sampled_points[-remove_points, ]
+    cat("  → Removed", length(remove_points), "points. Remaining:", nrow(samples_cleaned), "\n")
+  } else {
+    samples_cleaned <- sampled_points
+    cat("  → No points removed. All", nrow(samples_cleaned), "retained.\n")
+  }
+  
+  # Store the cleaned sample in the list
+  sampling_designs[[i]] <- samples_cleaned
 }
-
-
-# Check the sampling designs, looking to see that they're all different
-plot(sampling_designs[[1]])
-plot(sampling_designs[[2]])
-
-# Convert the list into usable sf objects
-sampling_design_coord <- lapply(sampling_designs, function(x) {
-  data.frame(
-    lat_WGS84 = x$sites_base$lat_WGS84,
-    lon_WGS84 = x$sites_base$lon_WGS84
-  )
-})
-names(sampling_design_coord) <- paste0("pref_2525_design_", seq_along(sampling_design_coord)) # Rename each design
-
-plot(sf_list[[2]])
+summary(sapply(sampling_designs, nrow)) # maximum 3 removed points, should be alright
+head(sampling_designs[[1]])
 
 # Save the list
-saveRDS(sf_list, file = "outputs/Length_comparison/sampling_designs/L04_preferential_designs_25_25.rds")
+saveRDS(sf_list, file = paste0("outputs/Length_comparison/sampling_designs/L04_", study_site, "_preferential_designs_25_25.rds"))
 
 
 
@@ -571,12 +912,13 @@ base_samps <- tibble(
 
 
 ### Run the sampling design ----
+
 sample.design <- grts(inp_sf,
                       n_base = base_samps,
                       n_over = 10,
                       stratum_var = "zone_strata",
                       DesignID = "LFC-GEO",
-                      mindis = 10,
+                      mindis = min_dis,
                       maxtry = 20)
 
 plot(sample.design)
@@ -584,23 +926,72 @@ plot(sample.design)
 
 ### Filter out points that are too close to each other ------------------------
 
+
 tempdat <- st_nn(sample.design$sites_base, sample.design$sites_base, # Measure the distance between points and their nearest neighbour
-                 returnDist = T, progress = F, k = 5, maxdist = 20) %>% # measure only the ones closer than 500m
+                 returnDist = T, progress = F, k = 5, maxdist = min_dis) %>% # measure only the ones closer than min_dis
   glimpse()
 
-
-samples_sf_pref <- sample.design$sites_base %>%
+samples <- sample.design$sites_base %>%
   dplyr::mutate(nn = sapply(tempdat[[1]], "[", 1),
-                dists = sapply(tempdat[[2]], "[", 1)) %>%
-  # If everything works well (and the grts mindis call above is set to 500), there should be only zeroes in dists.
-  # If not, remove the ones that have dist between 0-500m (0 excluded)
+                dists = sapply(tempdat[[2]], "[", 2)) %>%
+  # If everything works well (and the grts mindis call above is set above), there should be only zeroes in dists.
+  # If not, remove the ones that have dist within the mindis (0 excluded)
   glimpse()
+summary(samples$dists) # there may be some pairs of points too close, which we will remove below.
+
+# remove points too close to each other
+samples <- samples %>% mutate(row_id = row_number())
+nn_list <- tempdat$nn
+dist_list <- tempdat$dist
+remove_points <- c()
+
+# Check if there are any neighbors beyond self (length > 1 in any nn_list element)
+has_neighbors <- any(sapply(nn_list, function(x) length(x) > 1))
+
+if(has_neighbors) {
+  for(i in seq_along(nn_list)) {
+    neighbours <- nn_list[[i]]
+    distances <- dist_list[[i]]
+    
+    if(length(neighbours) < 2) next # skip if no neighbors except self
+    
+    close_neighbours <- neighbours[distances > 0 & distances < min_dis]
+    
+    for(nbr in close_neighbours) {
+      pair <- sort(c(i, nbr))
+      remove_points <- c(remove_points, pair[1])
+    }
+  }
+  
+  remove_points <- unique(remove_points)
+  
+  if(length(remove_points) > 0) {
+    samples_cleaned <- samples[-remove_points, ]
+  } else {
+    samples_cleaned <- samples
+  }
+  
+} else {
+  # No neighbors beyond self, so no removal
+  samples_cleaned <- samples
+} # this identifies one point from the pair of points within min_dis of each other to remove
+
+if(length(remove_points) > 0) {
+  samples_cleaned <- samples[-remove_points, ] # Remove points
+  
+  # Report
+  cat("Removed points:", length(remove_points), "\n")
+  cat("Remaining points:", nrow(samples_cleaned), "\n")
+} else { 
+  # No points to remove, keep original data
+  samples_cleaned <- samples
+  
+  cat("No points removed.\n")
+  cat("Total points:", nrow(samples_cleaned), "\n")
+} # this removes the points identified above, if there are any.
 
 
 ### Plot the sampling design --------------------------------------------------
-tempdat <- st_nn(samples_sf_pref, samples_sf_pref,
-                 returnDist = T, progress = F, k = 5, maxdist = 500)
-
 
 ggplot() +
   geom_sf(data = sf_all, aes(fill = as.factor(detrended)), colour = NA) +
@@ -614,58 +1005,84 @@ ggplot() +
   new_scale_fill() +
   geom_sf(data = aus) +
   geom_sf(data = SZ, colour = "#7f6000", fill = NA, linewidth = 1) +
-  geom_sf(data = samples_sf_pref, aes(colour = "Simulated sample points")) +
+  geom_sf(data = samples, aes(colour = "Simulated sample points")) +
   coord_sf(crs = crs, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
   scale_color_manual(name = '', values = c('Simulated sample points' = 'red')) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-saveRDS(samples_sf_pref, 'data/rmd/L04_example_sampling_design_preferential_20_30.rds') # for use in Rmarkdown
+saveRDS(samples, paste0('data/rmd/L04_', study_site,'_example_sampling_design_preferential_20_30.rds')) # for use in Rmarkdown
+
 
 
 ### Loop for 1000 designs ------------------------------------------------------
 
-num_designs <- 1000 # Number of preferential sampling designs to create
-sampling_designs <- vector("list", num_designs) # Create an empty list in which to store designs
+num_designs <- 1000
+sampling_designs <- vector("list", num_designs)
 
-for (i in 1:num_designs) { # Create SB sampling designs
-  print(i)
-  # Create a sampling design
+for (i in 1:num_designs) {
+  cat("Generating preferential (20/30) design", i, "\n")
+  
+  # Generate sampling design
   sampling_design <- grts(inp_sf,
                           n_base = base_samps,
                           n_over = 10,
                           stratum_var = "zone_strata",
-                          DesignID = paste("LFC-GEO", i, sep = "-"),
-                          mindis = 100,
+                          DesignID = paste("LFC-", i, sep = "-"),
+                          mindis = min_dis,
                           maxtry = 20)
   
-  # Add strata and zone_strata information to sampled points
+  # Add zone_strata info by spatial join
   sampled_points <- sampling_design$sites_base %>%
-    dplyr::mutate(
-      zone_strata = st_join(., inp_sf)$zone_strata,
-    )
+    dplyr::mutate(zone_strata = st_join(., inp_sf)$zone_strata) %>%
+    dplyr::mutate(row_id = row_number())  # Add row ID for filtering
   
-  sampling_designs[[i]] <- sampled_points
+  # Calculate nearest neighbors and distances within min_dis
+  tempdat <- st_nn(sampled_points, sampled_points, 
+                   returnDist = TRUE, 
+                   progress = FALSE, 
+                   k = 5, 
+                   maxdist = min_dis)
+  
+  nn_list <- tempdat$nn
+  dist_list <- tempdat$dist
+  
+  remove_points <- integer()  # Initialize empty vector
+  
+  # Find points to remove (first point in each close pair)
+  for(j in seq_along(nn_list)) {
+    neighbours <- nn_list[[j]]
+    distances <- dist_list[[j]]
+    
+    if(length(neighbours) < 2) next
+    
+    close_neighbours <- neighbours[distances > 0 & distances < min_dis]
+    
+    for(nbr in close_neighbours) {
+      pair <- sort(c(j, nbr))
+      remove_points <- c(remove_points, pair[1])
+    }
+  }
+  
+  remove_points <- unique(remove_points)
+  
+  # Remove those points from sampled_points
+  if(length(remove_points) > 0) {
+    samples_cleaned <- sampled_points[-remove_points, ]
+    cat("  → Removed", length(remove_points), "points. Remaining:", nrow(samples_cleaned), "\n")
+  } else {
+    samples_cleaned <- sampled_points
+    cat("  → No points removed. All", nrow(samples_cleaned), "retained.\n")
+  }
+  
+  # Store the cleaned sample in the list
+  sampling_designs[[i]] <- samples_cleaned
 }
-
-
-# Check the sampling designs, looking to see that they're all different
-plot(sampling_designs[[1]])
-plot(sampling_designs[[2]])
-
-# Convert the list into usable sf objects
-sampling_design_coord <- lapply(sampling_designs, function(x) {
-  data.frame(
-    lat_WGS84 = x$sites_base$lat_WGS84,
-    lon_WGS84 = x$sites_base$lon_WGS84
-  )
-})
-names(sampling_design_coord) <- paste0("pref_2030_design_", seq_along(sampling_design_coord)) # Rename each design
-
-plot(sf_list[[2]])
+summary(sapply(sampling_designs, nrow)) # maximum 3 removed points, should be alright
+head(sampling_designs[[1]])
 
 # Save the list
-saveRDS(sf_list, file = "outputs/Length_comparison/sampling_designs/L04_preferential_designs_20_30.rds")
+saveRDS(sampling_designs, file = paste0("outputs/Length_comparison/sampling_designs/L04_", study_site, "_preferential_designs_20_30.rds"))
 
 
 ## CLUMPED SAMPLING DESIGN ----------------------------------------------------
@@ -760,10 +1177,10 @@ cluster_centers <- st_as_sf(rbind(cluster_centers_true, cluster_centers_north, c
 ### Create points around the cluster centres ----------------------------------
 
 # Parameters for the clusters
-cluster_radius          <- 400  # The radius of each clump (in meters)
+cluster_radius          <- 300  # The radius of each clump (in meters)
 points_per_cluster_out  <- 8  # Number of points per cluster outside SZ
 points_per_cluster_SZ   <- 9  # Number of points per cluster inside SZ (this is to add up to 50 total points)
-min_distance            <- 200  # Minimum distance between cluster points in meters
+min_distance            <- min_dis  # Minimum distance between cluster points in meters
 
 # Convert cluster centers to UTM (meters)
 cluster_centers_sf <- st_as_sf(cluster_centers, coords = c("X", "Y"), crs = crs)
@@ -773,82 +1190,167 @@ cluster_centers_utm       <- as.data.frame(st_coordinates(cluster_centers_sf))
 samp_area_utm             <- st_transform(samp_area, crs)
 preferential_area_SZ_utm  <- st_transform(preferential_area_SZ, crs)
 
-generate_clumped_points <- function(cluster_centers_utm, samp_area_utm, points_per_cluster, cluster_radius, preferential_area_SZ, min_distance) {
+generate_clumped_points <- function(cluster_centers_utm, samp_area_utm,
+                                    points_per_cluster, cluster_radius,
+                                    preferential_area_SZ,
+                                    preferential_area_north,
+                                    preferential_area_south,
+                                    SZ,
+                                    min_distance,
+                                    points_per_cluster_SZ = 9,
+                                    points_per_cluster_out = 8) {
   clumped_points <- list()
   
-  # Loop through each cluster center
   for (i in 1:nrow(cluster_centers_utm)) {
-    cluster_points <- data.frame(
-      x = numeric(0),  
-      y = numeric(0),  
-      cluster_id = integer(0),
-      in_SZ = logical(0)  # New column to indicate if the point is in SZ
-    )
+    cluster_points <- data.frame(x = numeric(0), y = numeric(0), cluster_id = integer(0), zone = character(0))
     
-    # Convert cluster center to sf point
+    # Create sf point for the cluster center
     cluster_sf <- st_sfc(st_point(c(cluster_centers_utm$X[i], cluster_centers_utm$Y[i])), crs = st_crs(preferential_area_SZ))
     
-    # Check if cluster center is inside SZ
-    is_in_SZ <- lengths(st_intersects(cluster_sf, preferential_area_SZ)) > 0
-    points_per_cluster <- ifelse(is_in_SZ, points_per_cluster_SZ, points_per_cluster_out)
+    # Determine which zone the cluster center falls in
+    if (lengths(st_intersects(cluster_sf, preferential_area_SZ)) > 0) {
+      current_zone <- "SZ"
+      zone_polygon <- SZ  # Use strict SZ polygon
+      points_needed <- points_per_cluster_SZ
+    } else if (lengths(st_intersects(cluster_sf, preferential_area_north)) > 0) {
+      current_zone <- "north"
+      zone_polygon <- st_difference(samp_area_utm, st_make_valid(SZ))
+      points_needed <- points_per_cluster_out
+    } else if (lengths(st_intersects(cluster_sf, preferential_area_south)) > 0) {
+      current_zone <- "south"
+      zone_polygon <- st_difference(samp_area_utm, st_make_valid(SZ))
+      points_needed <- points_per_cluster_out
+    } else {
+      warning(paste("Cluster center", i, "does not fall into any known zone. Skipping."))
+      next
+    }
     
-    # Generate points while maintaining minimum distance constraint
-    while (nrow(cluster_points) < points_per_cluster) {
-      # Generate random point within cluster radius
+    # Generate cluster points
+    while (nrow(cluster_points) < points_needed) {
       x_random <- rnorm(1, mean = cluster_centers_utm$X[i], sd = cluster_radius)
       y_random <- rnorm(1, mean = cluster_centers_utm$Y[i], sd = cluster_radius)
+      point <- st_sfc(st_point(c(x_random, y_random)), crs = st_crs(zone_polygon))
       
-      # Create sf point
-      point <- st_sfc(st_point(c(x_random, y_random)), crs = st_crs(preferential_area_SZ))
-      
-      # Ensure the point is inside the sampling area
-      if (lengths(st_intersects(point, samp_area_utm)) > 0) {
+      # Check if point is in the correct zone and in sampling area
+      if (lengths(st_intersects(point, zone_polygon)) > 0 &&
+          lengths(st_intersects(point, samp_area_utm)) > 0) {
         
-        # Check if the point is inside the SZ
-        point_in_SZ <- lengths(st_intersects(point, preferential_area_SZ)) > 0
-        
-        # Ensure the point is inside or outside SZ based on cluster category
-        if (is_in_SZ) {
-          if (!point_in_SZ) next  # Skip if not inside SZ
-        } else {
-          if (point_in_SZ) next  # Skip if inside SZ
-        }
-        
-        # Convert existing points in the cluster to sf object
+        # Enforce minimum distance between points in the same cluster
         if (nrow(cluster_points) > 0) {
-          existing_points_sf <- st_as_sf(cluster_points, coords = c("x", "y"), crs = st_crs(preferential_area_SZ))
-          
-          # Compute distances to existing points
+          existing_points_sf <- st_as_sf(cluster_points, coords = c("x", "y"), crs = st_crs(zone_polygon))
           distances <- st_distance(point, existing_points_sf)
           
-          # Ensure new point is at least min_distance from all existing points
-          if (any(distances < units::set_units(min_distance, "m"))) next # Skip this point if too close
+          if (any(distances < units::set_units(min_distance, "m"))) next
         }
         
-        # Add point to cluster
-        cluster_points <- rbind(cluster_points, data.frame(x = x_random, y = y_random, cluster_id = i, in_SZ = point_in_SZ))
+        # Accept point
+        cluster_points <- rbind(cluster_points, data.frame(
+          x = x_random,
+          y = y_random,
+          cluster_id = i,
+          zone = current_zone
+        ))
       }
     }
     
-    # Store generated cluster points
     clumped_points[[i]] <- cluster_points
   }
   
-  # Combine all clusters into a single data frame
   clumped_points_df <- do.call(rbind, clumped_points)
   return(clumped_points_df)
 }
 
+clumped_points_sf <- generate_clumped_points(
+  cluster_centers_utm,
+  samp_area_utm,
+  points_per_cluster = NULL,
+  cluster_radius,
+  preferential_area_SZ_utm,
+  preferential_area_north = st_transform(preferential_area_north, crs),
+  preferential_area_south = st_transform(preferential_area_south, crs),
+  SZ = SZ,
+  min_distance
+)
+
+plot(clumped_points_sf$x, clumped_points_sf$y)
 
 # Generate the clumped points within the sampling area
-clumped_points_sf <- generate_clumped_points(cluster_centers_utm, samp_area_utm, points_per_cluster, cluster_radius, preferential_area_SZ_utm, min_distance)
 clumped_points_sf <- st_as_sf(clumped_points_sf, coords = c("x", "y"), crs = crs)
 
 # Convert back to spatial features in WGS84 CRS
-samples_sf_cluster <- st_transform(clumped_points_sf, 4326)
+samples <- st_transform(clumped_points_sf, 4326)
 
 # View results
-print(samples_sf_cluster)
+print(samples)
+plot(samples)
+
+### Filter out points that are too close to each other ------------------------
+
+tempdat <- st_nn(samples$geometry, samples$geometry, # Measure the distance between points and their nearest neighbour
+                 returnDist = T, progress = F, k = 5, maxdist = min_dis) %>% # measure only the ones closer than min_dis
+  glimpse()
+
+samples <- samples %>%
+  dplyr::mutate(nn = sapply(tempdat[[1]], "[", 1),
+                dists = sapply(tempdat[[2]], "[", 2)) %>%
+  # If everything works well (and the grts mindis call above is set above), there should be only zeroes in dists.
+  # If not, remove the ones that have dist within the mindis (0 excluded)
+  glimpse()
+summary(samples$dists) # there may be some pairs of points too close, which we will remove below.
+
+# remove points too close to each other
+samples <- samples %>% mutate(row_id = row_number())
+nn_list <- tempdat$nn
+dist_list <- tempdat$dist
+remove_points <- c()
+
+# Check if there are any neighbors beyond self (length > 1 in any nn_list element)
+has_neighbors <- any(sapply(nn_list, function(x) length(x) > 1))
+
+if(has_neighbors) {
+  for(i in seq_along(nn_list)) {
+    neighbours <- nn_list[[i]]
+    distances <- dist_list[[i]]
+    
+    if(length(neighbours) < 2) next # skip if no neighbors except self
+    
+    close_neighbours <- neighbours[distances > 0 & distances < min_dis]
+    
+    for(nbr in close_neighbours) {
+      pair <- sort(c(i, nbr))
+      remove_points <- c(remove_points, pair[1])
+    }
+  }
+  
+  remove_points <- unique(remove_points)
+  
+  if(length(remove_points) > 0) {
+    samples_cleaned <- samples[-remove_points, ]
+  } else {
+    samples_cleaned <- samples
+  }
+  
+} else {
+  # No neighbors beyond self, so no removal
+  samples_cleaned <- samples
+} # this identifies one point from the pair of points within min_dis of each other to remove
+
+if(length(remove_points) > 0) {
+  samples_cleaned <- samples[-remove_points, ] # Remove points
+  
+  # Report
+  cat("Removed points:", length(remove_points), "\n")
+  cat("Remaining points:", nrow(samples_cleaned), "\n")
+} else { 
+  # No points to remove, keep original data
+  samples_cleaned <- samples
+  
+  cat("No points removed.\n")
+  cat("Total points:", nrow(samples_cleaned), "\n")
+} # this removes the points identified above, if there are any.
+
+plot(samples_cleaned)
+
 
 ### Plot the sampling design --------------------------------------------------
 
@@ -864,64 +1366,125 @@ ggplot() +
   new_scale_fill() +
   geom_sf(data = aus) +
   geom_sf(data = SZ, colour = "#7f6000", fill = NA, linewidth = 1) +
-  geom_sf(data = samples_sf_cluster, aes(colour = "Simulated sample points")) +
+  geom_sf(data = samples_cleaned, aes(colour = "Simulated sample points")) +
   coord_sf(crs = crs, xlim = ext(samp_area)[1:2], ylim = ext(samp_area)[3:4]) +
   scale_color_manual(name = '', values = c('Simulated sample points' = 'red')) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-saveRDS(samples_sf_cluster, 'data/rmd/L04_example_sampling_design_clustered.rds') # for use in Rmarkdown
+
+saveRDS(samples_sf_cluster, paste0('data/rmd/L04_', study_site, '_example_sampling_design_clustered.rds')) # for use in Rmarkdown
 
 
 ### Loop for 1000 designs -----------------------------------------------------
 
-# Number of designs you want to generate
 num_designs <- 1000
-sampling_designs <- vector("list", num_designs)  # Create an empty list to store the designs
+sampling_designs <- vector("list", length = num_designs)
+par(mfrow = c(3, 3)) # the loop has a plot check for each simulation, setting up a 3x3 layout
 
-# Loop to generate 1000 designs
 for (i in 1:num_designs) {
-  # Set a random seed for each iteration to ensure different cluster centers and points
-  set.seed(i)  # This ensures a different seed for each design, which leads to different random points
-  print(i)
+  cat("Iteration:", i, "\n")
   
-  # Generate cluster centers for each design
-  cluster_centers_true <- generate_points_in_polygon(preferential_area_SZ, num_clusters)
+  # Generate cluster centers
+  
+  preferential_area_SZ    <- clump_area[clump_area$in_SZ == "TRUE", ]
+  preferential_area_north <- clump_area[clump_area$in_SZ == "FALSE_north", ]
+  preferential_area_south <- clump_area[clump_area$in_SZ == "FALSE_south", ]
+  
+  num_clusters <- 2
+  cluster_centers_true  <- generate_points_in_polygon(preferential_area_SZ, num_clusters)
   cluster_centers_north <- generate_points_in_polygon(preferential_area_north, num_clusters)
   cluster_centers_south <- generate_points_in_polygon(preferential_area_south, num_clusters)
+  
+  cluster_centers <- st_as_sf(rbind(cluster_centers_true, cluster_centers_north, cluster_centers_south), coords = c("x", "y"), crs = crs)
+  cluster_centers_sf <- st_transform(cluster_centers, crs) # for plotting within the loop only
+  cluster_centers_utm <- as.data.frame(st_coordinates(cluster_centers)) 
+  
+  
+  # Generate cluster points 
+  
+  samp_area_utm <- st_transform(samp_area, crs)
+  preferential_area_SZ_utm <- st_transform(preferential_area_SZ, crs)
+  SZ <- st_transform(SZ, crs)
+  
+  clumped_points_sf <- generate_clumped_points(
+    cluster_centers_utm,
+    samp_area_utm,
+    points_per_cluster = NULL,
+    cluster_radius,
+    preferential_area_SZ_utm,
+    preferential_area_north = st_transform(preferential_area_north, crs),
+    preferential_area_south = st_transform(preferential_area_south, crs),
+    SZ,
+    min_distance
+  )
 
-  # Combine cluster centers from all areas
-  cluster_centers <- st_as_sf(rbind(cluster_centers_true, cluster_centers_north, cluster_centers_south),
-                              coords = c("x", "y"), crs = st_crs(clump_area))
-
-  # Generate clumped points around these cluster centers
-  clumped_points_sf <- generate_clumped_points(cluster_centers_utm, samp_area_utm, points_per_cluster, cluster_radius, preferential_area_SZ_utm, min_distance)
   clumped_points_sf <- st_as_sf(clumped_points_sf, coords = c("x", "y"), crs = crs)
+  samples <- st_transform(clumped_points_sf, 4326)
 
-  # Convert clumped points back to WGS84 CRS
-  clumped_points_sf_wgs84 <- st_transform(clumped_points_sf, 4326)
+  
+  # Remove points too close to each other
 
-  # Save the current design in the list
-  sampling_designs[[i]] <- clumped_points_sf_wgs84
+  tempdat <- st_nn(samples$geometry, samples$geometry, returnDist = TRUE, progress = FALSE, k = 5, maxdist = min_dis)
+  
+  samples <- samples %>%
+    mutate(nn = sapply(tempdat[[1]], `[`, 1),
+           dists = sapply(tempdat[[2]], `[`, 2),
+           row_id = row_number())
+  
+  remove_points <- c()
+  nn_list <- tempdat$nn
+  dist_list <- tempdat$dist
+  
+  for(j in seq_along(nn_list)) {
+    neighbours <- nn_list[[j]]
+    distances <- dist_list[[j]]
+    
+    if (length(neighbours) < 2) next
+    
+    close_neighbours <- neighbours[distances > 0 & distances < min_dis]
+    for (nbr in close_neighbours) {
+      pair <- sort(c(j, nbr))
+      remove_points <- c(remove_points, pair[1])
+    }
+  }
+  
+  remove_points <- unique(remove_points)
+  
+  samples_cleaned <- if (length(remove_points) > 0) {
+    samples[-remove_points, ]
+  } else {
+    samples
+  }
+  
+  cat("Removed:", length(remove_points), "points\n")
+  cat("Remaining:", nrow(samples_cleaned), "points\n\n")
+  
+  
+  # Store the result
+  
+  sampling_designs[[i]] <- samples_cleaned
+
+  
+  # Plot check 
+  
+  cluster_centers_wgs <- st_transform(cluster_centers, crs = 4326)
+  SZ_wgs <- st_transform(SZ, crs = 4326)
+  
+  plot(cluster_centers_wgs$geometry,
+       col = "#A3320B",
+       pch = 4,
+       cex = 1.2,
+       main = paste("Simulation number", i))
+  plot(samples$geometry,
+       col = "#EFA00B",
+       pch = 20,
+       add = TRUE)
+  plot(SZ_wgs$geometry,
+       border = "#3E6990",
+       lwd = 2,
+       add = TRUE)
 }
 
-# Check the sampling designs
-plot(sampling_designs[[1]])
-plot(sampling_designs[[2]])
-
-
-names(sampling_designs) <- paste0("cluster_design_", seq_along(sampling_designs))
-
-# If they're already sf objects, no need to convert. But ensure they have the correct CRS.
-sf_list <- lapply(sampling_designs, function(x) {
-  st_set_crs(x, 4326)  # Set to WGS 84 if not already set
-})
-
-# Now you can access and plot directly with attributes preserved
-plot(sf_list[[5]])
-plot(sf_list[[15]])
-plot(sf_list[[2]])
-
-# Save the list of designs
-saveRDS(sf_list, file = "outputs/Length_comparison/sampling_designs/L04_clustered_designs.rds")
+saveRDS(sampling_designs, file = paste0("outputs/Length_comparison/sampling_designs/L04_", study_site, "_clustered_designs.rds"))
 
 ### END ###
