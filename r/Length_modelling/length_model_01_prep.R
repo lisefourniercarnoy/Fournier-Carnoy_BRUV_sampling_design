@@ -29,7 +29,7 @@ study_site <- "waatu" # waatu or waatern
 ext <- if(study_site == "waatern") {
   ext <- c(115.035, 115.68012207, -33.69743897, -33.35) 
 } else { 
-  ext <- c(114.7, 115, -34.25, -33.95)
+  ext <- c(114.7, 115.05, -34.25, -33.95)
 } # Extent to crop layers to
 
 
@@ -59,10 +59,13 @@ metadata <- if (study_site == "waatern") {
 } else {
   metadata <- read.csv(file_metadata) %>% dplyr::filter(!is.na(ip))
 } 
+
+if (study_site == "waatern") {
+  metadata <- metadata %>% rename(opcode = sample)
+}
+
 metadata <- metadata %>% # reading the right format depending on the study site
-  rename(#opcode = sample,
-         depth = depth_m,
-         ) %>% 
+  rename(depth = depth_m) %>% 
   dplyr::filter(str_detect(opcode, "BV")) %>%  # take only the spatially balanced drops. this is for the distribution model
   dplyr::filter(successful_count == "Yes") %>% 
   dplyr::select("opcode", "latitude_dd", "longitude_dd", "status", "depth") %>% 
@@ -108,73 +111,106 @@ saveRDS(dat, paste0("data/tidy/L01_", study_site, "_presence_latlong.rds")) # Ne
 
 ### Observed habitat formatting -----------------------------------------------
 
-# workflow from C. Spencer, https://globalarchivemanual.github.io/CheckEM/articles/r-workflows/check-habitat.html
-metadata <- read_metadata(here::here(paste0("data/raw/2024_", study_site, "_commonwealth/"))) %>%
-  dplyr::select(campaignid, sample, longitude_dd, latitude_dd, date_time, location, site, depth_m, successful_count, successful_length, successful_habitat_forwards, successful_habitat_backwards) %>%
-  glimpse()
+# waatu-specific workflow
+if (study_site == "waatu") {
+  library(SQAPI)
+  token <- readRDS("secrets/api_token.rds") %>%
+    writeClipboard()
+  api <- SQAPI$new()
+  
+  filter <- query_filter(name = "annotation_set_id", op = "eq", val = "17486") # this requests to download data from annotation_set_id that equal 17486, i.e the 2024-10-SWC
+  r <- export(
+    api = api,
+    endpoint = "api/annotation/export",
+    query_filters = filter,
+    template = "data.csv"
+  )
+  waatu_hab <- parse_api(r, filetype = "csv")
+} # this statement retrieves habitat data for Waatu/capes from Squidle. This only needs to be done once.
 
-points <- read_TM(here::here(paste0("data/raw/2024_", study_site, "_commonwealth/")),
-                  sample = "opcode"
-                  )
+if (study_site == "waatu") {
+  test_hab <- waatu_hab %>% 
+    dplyr::select(label.name, point.media.deployment.name) %>% 
+    rename(opcode = point.media.deployment.name,
+           habitat = label.name) %>% 
+    glimpse()
+  
+  tidy.habitat <- merge(test_hab, metadata, by = "opcode") %>% 
+    glimpse()
+  
+  # Save for 02_habitat_raster
+  saveRDS(tidy.habitat, file = here::here(paste0("data/tidy/L01_", study_site, "_tidy_habitat.rds")))
+} # this statement cleans up the habitat data in a format we can use, and saves it for L02.
 
-habitat <- points %>%
-  dplyr::filter(relief_annotated %in% "No") %>%
-  dplyr::select(campaignid, sample, starts_with("level"), scientific) %>%
-  glimpse()
-
-relief <- points %>%
-  dplyr::filter(relief_annotated %in% "Yes") %>%
-  dplyr::select(campaignid, sample, starts_with("level"), scientific) %>%
-  glimpse()
-
-num.points <- 20
-
-# Check nothing's missing, that everything is where it should be
-wrong.points.habitat <- habitat %>%
-  group_by(campaignid, sample) %>%
-  summarise(points.annotated = n()) %>%
-  left_join(metadata) %>%
-  dplyr::mutate(expected = case_when(successful_habitat_forwards %in% "Yes" & successful_habitat_backwards %in% "Yes" ~ num.points * 2, 
-                                     successful_habitat_forwards %in% "Yes" & successful_habitat_backwards %in% "No" ~ num.points * 1, 
-                                     successful_habitat_forwards %in% "No" & successful_habitat_backwards %in% "Yes" ~ num.points * 1, 
-                                     successful_habitat_forwards %in% "No" & successful_habitat_backwards %in% "No" ~ num.points * 0)) %>%
-  dplyr::filter(!points.annotated == expected) %>%
-  glimpse() # if there are no rows, all good.
-
-wrong.points.relief <- relief %>%
-  group_by(campaignid, sample) %>%
-  summarise(points.annotated = n()) %>%
-  left_join(metadata) %>%
-  dplyr::mutate(expected = case_when(successful_habitat_forwards %in% "Yes" & successful_habitat_backwards %in% "Yes" ~ num.points * 2, 
-                                     successful_habitat_forwards %in% "Yes" & successful_habitat_backwards %in% "No" ~ num.points * 1, 
-                                     successful_habitat_forwards %in% "No" & successful_habitat_backwards %in% "Yes" ~ num.points * 1, 
-                                     successful_habitat_forwards %in% "No" & successful_habitat_backwards %in% "No" ~ num.points * 0)) %>%
-  dplyr::filter(!points.annotated == expected) %>%
-  glimpse() # if there are no rows, all good.
-
-habitat.missing.metadata <- anti_join(habitat, metadata, by = c("sample")) %>%
-  glimpse() # if there are no rows, all good.
-
-metadata.missing.habitat <- anti_join(metadata, habitat, by = c("sample")) %>%
-  glimpse() # here there's one drop that doesn't have habitat, normal because the files are overall missing. it's the only one in Geographe. Normal. All chill.
-
-
-tidy.habitat <- habitat %>%
-  dplyr::mutate(number = 1) %>%                                     
-  left_join(catami) %>%
-  dplyr::select(campaignid, sample, number, starts_with("level"), family, genus, species) %>%
-  dplyr::filter(!level_2 %in% c("","Unscorable", NA)) %>%  
-  group_by(campaignid, sample, across(starts_with("level")), family, genus, species) %>%
-  dplyr::tally(number, name = "number") %>%
-  ungroup() %>%                                                     
-  dplyr::select(campaignid, sample, level_1, everything()) %>%
-  left_join(metadata %>% dplyr::select(sample, longitude_dd, latitude_dd), by = "sample") %>%
-  rename(opcode = sample) %>% 
-  glimpse()
-
-# Save for 02_habitat_raster
-saveRDS(tidy.habitat, file = here::here(paste0("data/tidy/L01_", study_site, "_tidy_habitat.rds")))
-
+# waatern-specific workflow
+if (study_site == "waatern") {
+  # workflow from C. Spencer, https://globalarchivemanual.github.io/CheckEM/articles/r-workflows/check-habitat.html
+  metadata <- read_metadata(here::here(paste0("data/raw/2024_", study_site, "_commonwealth/"))) %>%
+    dplyr::select(campaignid, sample, longitude_dd, latitude_dd, date_time, location, site, depth_m, successful_count, successful_length, successful_habitat_forwards, successful_habitat_backwards) %>%
+    glimpse()
+  
+  points <- read_TM(here::here(paste0("data/raw/2024_", study_site, "_commonwealth/")),
+                    sample = "opcode"
+  )
+  
+  habitat <- points %>%
+    dplyr::filter(relief_annotated %in% "No") %>%
+    dplyr::select(campaignid, sample, starts_with("level"), scientific) %>%
+    glimpse()
+  
+  relief <- points %>%
+    dplyr::filter(relief_annotated %in% "Yes") %>%
+    dplyr::select(campaignid, sample, starts_with("level"), scientific) %>%
+    glimpse()
+  
+  num.points <- 20
+  
+  # Check nothing's missing, that everything is where it should be
+  wrong.points.habitat <- habitat %>%
+    group_by(campaignid, sample) %>%
+    summarise(points.annotated = n()) %>%
+    left_join(metadata) %>%
+    dplyr::mutate(expected = case_when(successful_habitat_forwards %in% "Yes" & successful_habitat_backwards %in% "Yes" ~ num.points * 2, 
+                                       successful_habitat_forwards %in% "Yes" & successful_habitat_backwards %in% "No" ~ num.points * 1, 
+                                       successful_habitat_forwards %in% "No" & successful_habitat_backwards %in% "Yes" ~ num.points * 1, 
+                                       successful_habitat_forwards %in% "No" & successful_habitat_backwards %in% "No" ~ num.points * 0)) %>%
+    dplyr::filter(!points.annotated == expected) %>%
+    glimpse() # if there are no rows, all good.
+  
+  wrong.points.relief <- relief %>%
+    group_by(campaignid, sample) %>%
+    summarise(points.annotated = n()) %>%
+    left_join(metadata) %>%
+    dplyr::mutate(expected = case_when(successful_habitat_forwards %in% "Yes" & successful_habitat_backwards %in% "Yes" ~ num.points * 2, 
+                                       successful_habitat_forwards %in% "Yes" & successful_habitat_backwards %in% "No" ~ num.points * 1, 
+                                       successful_habitat_forwards %in% "No" & successful_habitat_backwards %in% "Yes" ~ num.points * 1, 
+                                       successful_habitat_forwards %in% "No" & successful_habitat_backwards %in% "No" ~ num.points * 0)) %>%
+    dplyr::filter(!points.annotated == expected) %>%
+    glimpse() # if there are no rows, all good.
+  
+  habitat.missing.metadata <- anti_join(habitat, metadata, by = c("sample")) %>%
+    glimpse() # if there are no rows, all good.
+  
+  metadata.missing.habitat <- anti_join(metadata, habitat, by = c("sample")) %>%
+    glimpse() # here there's one drop that doesn't have habitat, normal because the files are overall missing. it's the only one in Geographe. Normal. All chill.
+  
+  
+  tidy.habitat <- habitat %>%
+    dplyr::mutate(number = 1) %>%                                     
+    left_join(catami) %>%
+    dplyr::select(campaignid, sample, number, starts_with("level"), family, genus, species) %>%
+    dplyr::filter(!level_2 %in% c("","Unscorable", NA)) %>%  
+    group_by(campaignid, sample, across(starts_with("level")), family, genus, species) %>%
+    dplyr::tally(number, name = "number") %>%
+    ungroup() %>%                                                     
+    dplyr::select(campaignid, sample, level_1, everything()) %>%
+    left_join(metadata %>% dplyr::select(sample, longitude_dd, latitude_dd), by = "sample") %>%
+    rename(opcode = sample) %>% 
+    glimpse()
+  
+  # Save for 02_habitat_raster
+  saveRDS(tidy.habitat, file = here::here(paste0("data/tidy/L01_", study_site, "_tidy_habitat.rds")))
+} # this statement reads waatern habitat data and checks it.
 
 ### Bathymetry ----------------------------------------------------------------
 
